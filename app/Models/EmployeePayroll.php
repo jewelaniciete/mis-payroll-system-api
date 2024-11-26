@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
-use App\Models\Transaction;
+use App\Models\Staff;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Exercise extends Model
+class EmployeePayroll extends Model
 {
     use HasFactory;
 
-    public function transaction()
+    public function staff()
     {
-        return $this->hasMany(Transaction::class, 'exercise_id');
+        return $this->belongsTo(Staff::class, 'staff_id');
     }
 }

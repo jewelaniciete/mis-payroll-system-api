@@ -20,6 +20,7 @@ class StaffSeeder extends Seeder
             "lastname" => "Doe",
             "address" => "Metro Manila",
             "gender" => "male",
+            "position" => "Instructor",
             "contact_no" => "1234567890",
             "is_active" => 1
         ]);

@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('admins', function (Blueprint $table) {
+        Schema::create('inventories', function (Blueprint $table) {
             $table->id();
-            $table->string('email',255)->unique();
-            $table->string('password');
-            $table->text('name');
-            $table->boolean('is_active')->default(1);
-            $table->boolean('is_super_admin')->default(1);
-            $table->rememberToken();
+            $table->integer('item_no')->unique();
+            $table->string('name');
+            $table->enum('type', ['equipment', 'supplement']);
+            $table->string('short_description')->nullable();
+            $table->integer('quantity');
+            $table->decimal('price');
             $table->timestamps();
         });
     }
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('admins');
+        Schema::dropIfExists('inventories');
     }
 };

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Transaction;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,4 +14,9 @@ class Client extends Authenticatable
 
     protected $fillable = ['email', 'password', 'firstname', 'lastname', 'address', 'gender', 'contact_no', 'is_active'];
     protected $hidden = ['password'];
+
+    public function transaction()
+    {
+        return $this->hasMany(Transaction::class, 'client_id');
+    }
 }
