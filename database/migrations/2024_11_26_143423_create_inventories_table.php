@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('inventories', function (Blueprint $table) {
             $table->id();
-            $table->integer('item_no')->unique();
+            $table->string('item_code')->unique();
             $table->string('name');
             $table->enum('type', ['equipment', 'supplement']);
             $table->string('short_description')->nullable();

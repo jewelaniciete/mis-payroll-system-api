@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('exercises', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('slug')->unique();
             $table->decimal('price');
             $table->enum('plan', ['session', 'monthly'])->default('session');
             $table->string('image')->nullable();

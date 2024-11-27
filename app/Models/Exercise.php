@@ -10,6 +10,13 @@ class Exercise extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'name',
+        'price',
+        'plan',
+        'image'
+    ];
+
     public function transaction()
     {
         return $this->hasMany(Transaction::class, 'exercise_id');

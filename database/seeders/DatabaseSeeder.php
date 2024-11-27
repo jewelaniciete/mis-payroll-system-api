@@ -19,7 +19,9 @@ class DatabaseSeeder extends Seeder
             PositionSeeder::class,
             StaffSeeder::class,
             AdminSeeder::class,
-            ClientSeeder::class
+            ClientSeeder::class,
+            ExerciseSeeder::class,
+            InventorySeeder::class
         ]);
     }
 }
