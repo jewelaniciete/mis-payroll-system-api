@@ -14,9 +14,13 @@ class Staff extends Authenticatable
 {
     use HasFactory, HasApiTokens;
 
-    protected $fillable = ['email', 'password', 'firstname', 'lastname', 'address', 'gender', 'contact_no', 'is_active'];
+    protected $fillable = ['position_id','email', 'password', 'firstname', 'lastname', 'address', 'gender', 'contact_no', 'is_active'];
     protected $hidden = ['password'];
 
+    public function position()
+    {
+        return $this->belongsTo(Position::class, 'position_id');
+    }
     public function transaction()
     {
         return $this->hasMany(Transaction::class, 'staff_id');

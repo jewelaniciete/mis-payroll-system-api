@@ -10,6 +10,10 @@ class Position extends Model
 {
     use HasFactory;
 
+    public function staff()
+    {
+        return $this->hasMany(Staff::class, 'position_id');
+    }
     public function history()
     {
         return $this->hasMany(EmploymentHistory::class, 'position_id');

@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('staff', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('position_id');
+            $table->foreign('position_id')->references('id')->on('positions')->onDelete('cascade');
             $table->string('email',255)->unique();
             $table->string('password');
             $table->string('firstname');
             $table->string('lastname');
             $table->text('address');
             $table->enum('gender', ['male', 'female', 'other'])->default('other');
-            $table->string('position');
             $table->integer('contact_no')->nullable();
             $table->boolean('is_active')->default(1);
             $table->timestamps();
