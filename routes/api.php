@@ -41,6 +41,9 @@ Route::prefix('admin')->group(function () {
     Route::get('/edit-attendance/{id}', [AdminController::class, 'edit_staff_attendances']);
     Route::post('/update-attendance/{id}', [AdminController::class, 'update_staff_attendances']);
 
+    Route::get('/show-staff-payroll', [AdminController::class, 'show_staff_payrolls']);
+    Route::post('/store-staff-payroll/{id}', [AdminController::class, 'store_staff_payrolls']);
+
 });
 
 Route::prefix('staff')->group(function () {

@@ -9,6 +9,7 @@ use App\Models\Exercise;
 use App\Models\Position;
 use App\Models\Inventory;
 use Illuminate\Http\Request;
+use App\Models\EmployeePayroll;
 use App\Models\EmployeeAttendance;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\StaffShowResource;
@@ -18,6 +19,7 @@ use App\Http\Responses\ValidationResponse;
 use App\Http\Resources\ExerciseShowResource;
 use App\Http\Resources\PositionShowResource;
 use App\Http\Resources\InventoryShowResource;
+use App\Http\Resources\EmployeePayrollResource;
 use App\Http\Resources\EmployeeAttendanceResource;
 
 class AdminController extends Controller
@@ -506,7 +508,8 @@ class AdminController extends Controller
             ], 400);
         }
 
-        $attendance = EmployeeAttendance::where('staff_id', $staff->id)->where('date', $today)->first();
+        $attendance = EmployeeAttendance::where('staff_id', $staff->id)
+                        ->where('date', $today)->first();
 
         if($attendance){
             return response()->json([
@@ -589,6 +592,96 @@ class AdminController extends Controller
 
     public function restore_staff_attendances(Request $request, $id){
         //
+    }
+
+    public function show_staff_payrolls(){
+        $payroll = EmployeePayroll::with('staff')->get();
+
+        return response()->json([
+            'data' => EmployeePayrollResource::collection($payroll),
+            'message' => 'Payroll retrieved successfully',
+        ], 200);
+    }
+
+    public function store_staff_payrolls(Request $request, $id){
+        $staff = Staff::find($id);
+        if(!$staff){
+            return response()->json([
+                'message' => 'Staff not found'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'staff_id' => 'required',
+            'start_date' => 'required',
+            'end_date' => 'required',
+        ]);
+
+        $id = $staff->id;
+        $start_date = $request->start_date;
+        $end_date = $request->end_date;
+
+        $query = EmployeeAttendance::query()
+        ->when($id, function ($query, $id) {
+            return $query->where('id', $id);
+        })
+        ->when($start_date, function ($query, $start_date) {
+            return $query->whereDate('date', '>=', $start_date);
+        })
+        ->when($end_date, function ($query, $end_date) {
+            return $query->whereDate('date', '<=', $end_date);
+        });
+
+        // $filteredData = $query->with('staff.position')->get();
+        // $present_days = $query->count();
+
+        $whole_days = $query->clone()->where('attendance', 'present')->count();
+
+        $half_days = $query->clone()->where('attendance', 'halfday')->count();
+
+        $present_day = $whole_days + ($half_days / 2);
+
+        $salary = 450 * $present_day;
+
+        // Additional Incomes
+        $overtime = $request->over_time;
+        $yearly_bonus = $request->yearly_bonus;
+        $sales_comission = $request->sales_comission;
+        $incentives = $request->incentives;
+
+        $net_income = $salary + $overtime + $yearly_bonus + $sales_comission + $incentives;
+
+        // Deductions
+        $sss = (0.02 * $net_income) / 2;
+        $pag_ibig = (0.02 * $net_income) / 2;
+        $philhealth = (0.02 * $net_income) / 2;
+
+        $total_deductions = $sss + $pag_ibig + $philhealth;
+
+        $final_salary = $net_income - $total_deductions;
+
+        $payroll = EmployeePayroll::create([
+            'staff_id' => $staff->id,
+            'present_day' => $present_day,
+            'salary' => $salary,
+            'over_time' => $overtime,
+            'yearly_bonus' => $yearly_bonus,
+            'sales_comission' => $sales_comission,
+            'incentives' => $incentives,
+            'sss' => $sss,
+            'pag_ibig' => $pag_ibig,
+            'philhealth' => $philhealth,
+            'net_income' => $net_income,
+            'total_deductions' => $total_deductions,
+            'final_salary' => $final_salary,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+        ]);
+
+        return response()->json([
+            'data' => new EmployeePayrollResource($payroll),
+            'message' => 'Payroll retrieved successfully'
+        ]);
     }
 
 }

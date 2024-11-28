@@ -24,7 +24,8 @@ return new class extends Migration
             $table->decimal('sss')->nullable();
             $table->decimal('pag_ibig')->nullable();
             $table->decimal('philhealth')->nullable();
-            $table->decimal('tax')->nullable();
+            $table->decimal('net_income')->nullable();
+            $table->decimal('total_deductions')->nullable();
             $table->decimal('final_salary')->nullable();
             $table->date('start_date');
             $table->date('end_date');
