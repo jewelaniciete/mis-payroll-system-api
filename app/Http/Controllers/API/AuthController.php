@@ -185,6 +185,17 @@ class AuthController extends Controller
         );
     }
 
+    private function check_user_type($user)
+    {
+        if ($user->is_admin) {
+            return 'admin';
+        } elseif ($user->is_staff) {
+            return 'staff';
+        } else {
+            return 'client';
+        }
+    }
+
     public function logout(Request $request)
     {
         try {
