@@ -21,6 +21,7 @@ class StaffShowResource extends JsonResource
             'email' => $this->email,
             'gender' => $this->gender,
             'address' => $this->address,
+            'joined_date' => $this->joined_date,
             'contact_no' => $this->contact_no
         ];
     }

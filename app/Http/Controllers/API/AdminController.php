@@ -144,6 +144,8 @@ class AdminController extends Controller
             return new ValidationResponse($validator->errors());
         }
 
+        $today = Carbon::now()->format('Y/m/d');
+
         $staff = Staff::create([
             'position_id' => $request->position_id,
             'firstname' => $request->firstname,
@@ -152,6 +154,7 @@ class AdminController extends Controller
             'password' => bcrypt($request->password),
             'address' => $request->address,
             'gender' => $request->gender,
+            'joined_date' => $today,
             'contact_no' => $request->contact_no
         ]);
 

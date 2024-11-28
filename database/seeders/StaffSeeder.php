@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use App\Models\Staff;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -22,6 +23,7 @@ class StaffSeeder extends Seeder
             "address" => "Metro Manila",
             "gender" => "male",
             "contact_no" => "1234567890",
+            "joined_date" => Carbon::now()->format('Y/m/d'),
             "is_active" => 1
         ]);
     }

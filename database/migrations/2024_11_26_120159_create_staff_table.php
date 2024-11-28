@@ -22,6 +22,7 @@ return new class extends Migration
             $table->text('address');
             $table->enum('gender', ['male', 'female', 'other'])->default('other');
             $table->integer('contact_no')->nullable();
+            $table->date('joined_date');
             $table->boolean('is_active')->default(1);
             $table->timestamps();
         });

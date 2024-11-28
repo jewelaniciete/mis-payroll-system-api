@@ -15,7 +15,7 @@ class Staff extends Authenticatable
 {
     use HasFactory, HasApiTokens;
 
-    protected $fillable = ['position_id','email', 'password', 'firstname', 'lastname', 'address', 'gender', 'contact_no', 'is_active'];
+    protected $fillable = ['position_id','email', 'password', 'firstname', 'lastname', 'address', 'gender', 'contact_no', 'is_active', 'joined_date', 'left_date'];
     protected $hidden = ['password'];
 
     public function position()
@@ -26,17 +26,10 @@ class Staff extends Authenticatable
     {
         return $this->hasMany(Transaction::class, 'staff_id');
     }
-
-    public function history()
-    {
-        return $this->hasMany(EmploymentHistory::class, 'staff_id');
-    }
-
     public function payroll()
     {
         return $this->hasMany(EmployeePayroll::class, 'staff_id');
     }
-
     public function attendances()
     {
         return $this->hasMany(EmployeeAttendance::class, 'staff_id');
