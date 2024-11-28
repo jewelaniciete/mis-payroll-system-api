@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Transaction;
 use App\Models\EmployeePayroll;
 use App\Models\EmploymentHistory;
+use App\Models\EmployeeAttendance;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,5 +35,10 @@ class Staff extends Authenticatable
     public function payroll()
     {
         return $this->hasMany(EmployeePayroll::class, 'staff_id');
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(EmployeeAttendance::class, 'staff_id');
     }
 }

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('staff_id');
             $table->foreign('staff_id')->references('id')->on('staff')->onDelete('cascade');
             $table->enum('attendance', ['present', 'absent'])->default('absent');
+            $table->date('date');
             $table->timestamps();
         });
     }

@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\API;
 
+use Carbon\Carbon;
 use App\Models\Staff;
 use App\Models\Client;
 use App\Models\Exercise;
 use App\Models\Position;
 use App\Models\Inventory;
 use Illuminate\Http\Request;
+use App\Models\EmployeeAttendance;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\StaffShowResource;
 use Illuminate\Support\Facades\Validator;
@@ -16,6 +18,7 @@ use App\Http\Responses\ValidationResponse;
 use App\Http\Resources\ExerciseShowResource;
 use App\Http\Resources\PositionShowResource;
 use App\Http\Resources\InventoryShowResource;
+use App\Http\Resources\EmployeeAttendanceResource;
 
 class AdminController extends Controller
 {
@@ -467,6 +470,125 @@ class AdminController extends Controller
             'data' => new InventoryShowResource($inventory),
             'message' => 'Inventory updated successfully'
         ], 200);
+    }
+
+    public function soft_delete_inventories(Request $request, $id){
+        //
+    }
+
+    public function hard_delete_inventories(Request $request, $id){
+        //
+    }
+
+    public function restore_inventories(Request $request, $id){
+        //
+    }
+
+    public function show_staff_attendances(){
+        $attendances = EmployeeAttendance::with('staff')->get();
+
+        return EmployeeAttendanceResource::collection($attendances);
+    }
+
+    public function store_staff_attendances(Request $request, $id){
+        $staff = Staff::find($id);
+        if(!$staff){
+            return response()->json([
+                'message' => 'Staff not found'
+            ], 404);
+        }
+
+        $today = Carbon::now()->format('Y/m/d');
+
+        if($request->date != $today){
+            return response()->json([
+                'message' => 'Date is not today'
+            ], 400);
+        }
+
+        $attendance = EmployeeAttendance::where('staff_id', $staff->id)->where('date', $today)->first();
+
+        if($attendance){
+            return response()->json([
+                'message' => 'Attendance already filled'
+            ], 400);
+        }
+
+
+        $validator = Validator::make($request->all(), [
+            'staff_id' => 'required',
+            'date' => 'required',
+            'attendance' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return new ValidationResponse($validator->errors());
+        }
+
+
+        $attendance = EmployeeAttendance::create([
+            'staff_id' => $request->staff_id,
+            'date' => $request->date,
+            'attendance' => $request->attendance,
+        ]);
+
+        return response()->json([
+            'data' => new EmployeeAttendanceResource($attendance),
+            'message' => 'Attendance created successfully'
+        ], 201);
+    }
+
+    public function edit_staff_attendances(Request $request, $id){
+        $attendance = EmployeeAttendance::find($id);
+        if(!$attendance){
+            return response()->json([
+                'message' => 'Attendance not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => new EmployeeAttendanceResource($attendance),
+            'message' => 'Attendance retrieved successfully'
+        ], 200);
+    }
+
+    public function update_staff_attendances(Request $request, $id){
+        $attendance = EmployeeAttendance::find($id);
+
+        if(!$attendance){
+            return response()->json([
+                'message' => 'Attendance not found'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'attendance' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return new ValidationResponse($validator->errors());
+        }
+
+        $attendance->update([
+            'attendance' => $request->attendance,
+        ]);
+
+        return response()->json([
+            'data' => new EmployeeAttendanceResource($attendance),
+            'message' => 'Attendance updated successfully'
+        ], 200);
+    }
+
+    public function soft_delete_staff_attendances(Request $request, $id){
+        //
+    }
+
+    public function hard_delete_staff_attendances(Request $request, $id){
+        //
+    }
+
+    public function restore_staff_attendances(Request $request, $id){
+        //
     }
 
 }
