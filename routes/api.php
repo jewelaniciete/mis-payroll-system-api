@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\AdminController;
+use App\Http\Controllers\API\StaffController;
 
 Route::group(['middleware' => ['guest.api']], function () {
     Route::middleware(['throttle:login'])->post('/login',[AuthController::class, 'login']);
@@ -37,4 +38,9 @@ Route::prefix('admin')->group(function () {
 
 });
 
-
+Route::prefix('staff')->group(function () {
+    Route::get('/show-client', [StaffController::class, 'show_clients']);
+    Route::post('/store-client', [StaffController::class, 'store_clients']);
+    Route::get('/edit-client/{id}', [StaffController::class, 'edit_clients']);
+    Route::post('/update-client/{id}', [StaffController::class, 'update_clients']);
+});
