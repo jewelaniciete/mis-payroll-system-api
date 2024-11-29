@@ -161,6 +161,34 @@ class StaffController extends Controller
         return response()->json(['message' => 'Products added to cart successfully'], 200);
     }
 
+    public function remove_item(Request $request)
+    {
+        $user = $request->user(); // Assumes user is authenticated
+
+        // Validate input
+        $request->validate([
+            'product_id' => 'required|exists:inventories,id',
+        ]);
+
+        $productId = $request->input('product_id');
+
+        // Find the cart item
+        $cartItem = StaffCart::where('staff_id', $user->id)
+            ->where('inventory_id', $productId)
+            ->first();
+
+        if (!$cartItem) {
+            return response()->json(['error' => 'Item not found in cart'], 404);
+        }
+
+        // Remove the cart item
+        $cartItem->delete();
+
+        return response()->json([
+            'message' => 'Item removed from cart successfully',
+        ], 200);
+    }
+
     public function checkout(Request $request)
     {
         $user = auth()->user();
