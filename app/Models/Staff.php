@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+
+use App\Models\StaffCart;
+use App\Models\StaffOrder;
 use App\Models\Transaction;
 use App\Models\EmployeePayroll;
 use App\Models\EmploymentHistory;
@@ -40,5 +43,15 @@ class Staff extends Authenticatable
     public function attendances()
     {
         return $this->hasMany(EmployeeAttendance::class, 'staff_id');
+    }
+
+    public function cart_items()
+    {
+        return $this->hasMany(StaffCart::class);
+    }
+
+    public function order()
+    {
+        return $this->hasMany(StaffOrder::class);
     }
 }

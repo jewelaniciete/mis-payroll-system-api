@@ -167,11 +167,12 @@ class AuthController extends Controller
     {
         $user = auth()->user();
         if(!$user) return new ErrorResponse(message: 'Unauthenticated', code: Response::HTTP_UNAUTHORIZED);
-        $user_type = check_user_type();
+
+        $user_type = $this->check_user_type($user);
 
         $resources = [
             'staff' => StaffResource::class,
-            'employee' => EmployeeResource::class,
+            'client' => ClientResource::class,
             'admin' => AdminResource::class,
         ];
 
@@ -187,13 +188,14 @@ class AuthController extends Controller
 
     private function check_user_type($user)
     {
-        if ($user->is_admin) {
-            return 'admin';
-        } elseif ($user->is_staff) {
+        if (Auth::check() && auth()->user()->tokenCan('staff_user')) {
             return 'staff';
-        } else {
+        } else if (Auth::check() && auth()->user()->tokenCan('client_user')) {
             return 'client';
+        } else if (Auth::check() && auth()->user()->tokenCan('admin_user')) {
+            return 'admin';
         }
+        return null;
     }
 
     public function logout(Request $request)
