@@ -500,7 +500,7 @@ class AdminController extends Controller
             ], 404);
         }
 
-        $today = Carbon::now()->format('Y/m/d');
+        $today = Carbon::now()->format('Y-m-d');
 
         if($request->date != $today){
             return response()->json([

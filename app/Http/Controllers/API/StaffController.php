@@ -163,7 +163,7 @@ class StaffController extends Controller
 
     public function remove_item(Request $request)
     {
-        $user = $request->user(); // Assumes user is authenticated
+        $user = auth()->user(); // Assumes user is authenticated
 
         // Validate input
         $request->validate([
@@ -216,6 +216,8 @@ class StaffController extends Controller
                 if ($item->product->quantity < $item->quantity) {
                     throw new \Exception("Insufficient stock for product: {$item->product->name}");
                 }
+
+                //multiply pls
 
                 StaffOrderItem::create([
                     'order_id' => $order->id,
