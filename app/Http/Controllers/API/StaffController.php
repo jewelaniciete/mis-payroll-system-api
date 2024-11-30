@@ -216,13 +216,11 @@ class StaffController extends Controller
                     throw new \Exception("Insufficient stock for product: {$item->product->name}");
                 }
 
-                //multiply pls
-
                 StaffOrderItem::create([
                     'order_id' => $order->id,
                     'inventory_id' => $item->inventory_id,
                     'quantity' => $item->quantity,
-                    'price' => $item->product->price,
+                    'price' => $item->product->price * $item->quantity,
                 ]);
 
                 // Reduce product stock

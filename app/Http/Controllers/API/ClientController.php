@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\API;
 
 use App\Models\Exercise;
+use App\Models\Inventory;
 use Illuminate\Http\Request;
 use App\Models\ClientExerciseCart;
 use Illuminate\Support\Facades\DB;
 use App\Models\ClientExerciseOrder;
+use App\Models\ClientInventoryCart;
 use App\Http\Controllers\Controller;
+use App\Models\ClientInventoryOrder;
 use App\Models\ClientExerciseOrderItem;
+use App\Models\ClientInventoryOrderItem;
 
 class ClientController extends Controller
 {
@@ -126,4 +130,128 @@ class ClientController extends Controller
             return response()->json(['message' => 'Checkout failed', 'error' => $e->getMessage()], 400);
         }
     }
+
+    public function inventory_add_to_cart(Request $request){
+        $validated = $request->validate([
+            'items' => 'required|array',
+            'items.*.product_id' => 'required|exists:inventories,id',
+            'items.*.quantity' => 'required|integer|min:1',
+        ]);
+
+        foreach ($validated['items'] as $item) {
+            $product = Inventory::find($item['product_id']);
+
+            if (!$product) {
+                return response()->json(['error' => "Product with ID {$item['product_id']} not found"], 404);
+            }
+
+            $basePrice = $product->price;
+            $quantity = $item['quantity'];
+
+            // Calculate the total price based on the quantity
+            $price = $basePrice * $quantity;
+
+            // Check if the product is already in the cart
+            $cartItem = ClientInventoryCart::where('inventory_id', $product->id)
+                ->where('client_id', auth()->id())
+                ->first();
+
+            if ($cartItem) {
+                // Update quantity if the product is already in the cart
+                $cartItem->quantity += $item['quantity'];
+                $cartItem->price = $basePrice * $cartItem->quantity;
+                $cartItem->save();
+            } else {
+                // Add the product to the cart
+                ClientInventoryCart::create([
+                    'client_id' => auth()->id(),
+                    'inventory_id' => $product->id,
+                    'quantity' => $quantity,
+                    'price' => $price,
+                ]);
+            }
+        }
+
+        return response()->json(['message' => 'Product added to cart successfully'], 201);
+    }
+
+    public function inventory_remove_item(Request $request){
+        $user = auth()->user(); // Assumes user is authenticated
+
+        // Validate input
+        $request->validate([
+            'product_id' => 'required|exists:inventories,id',
+        ]);
+
+        $productId = $request->input('product_id');
+
+        $cartItem = ClientInventoryCart::where('client_id', $user->id)
+            ->where('inventory_id', $productId)
+            ->first();
+
+        if (!$cartItem) {
+            return response()->json(['error' => 'Item not found in cart'], 404);
+        }
+
+        // Remove the cart item
+        $cartItem->delete();
+
+        return response()->json([
+            'message' => 'Item removed from cart successfully',
+        ], 200);
+    }
+
+    public function inventory_checkout(Request $request){
+
+        $user = auth()->user(); // Assumes user is authenticated
+
+        $cartItems = ClientInventoryCart::where('client_id', $user->id)->with('product')->get();
+
+        if ($cartItems->isEmpty()) {
+            return response()->json(['error' => 'Your cart is empty'], 400);
+        }
+
+        // Start a database transaction
+        DB::beginTransaction();
+
+        try {
+
+            $order = ClientInventoryOrder::create([
+                'client_id' => $user->id,
+                'total_amount' => $cartItems->sum(function ($item) {
+                    return $item->quantity * $item->product->price;
+                }),
+                'status' => 'pending' // Status can be pending, paid, etc.
+            ]);
+
+            foreach ($cartItems as $item) {
+                if ($item->product->quantity < $item->quantity) {
+                    throw new \Exception("Insufficient stock for product: {$item->product->name}");
+                }
+
+
+                ClientInventoryOrderItem::create([
+                    'order_id' => $order->id,
+                    'inventory_id' => $item->inventory_id,
+                    'quantity' => $item->quantity,
+                    'price' => $item->product->price * $item->quantity,
+                ]);
+
+                $item->product->decrement('quantity', $item->quantity);
+            }
+
+            ClientInventoryCart::where('client_id', $user->id)->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Checkout successful',
+                'order_id' => $order->id,
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Checkout failed', 'error' => $e->getMessage()], 400);
+        }
+    }
+
 }
