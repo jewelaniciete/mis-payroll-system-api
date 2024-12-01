@@ -11,7 +11,10 @@ use App\Models\Inventory;
 use Illuminate\Http\Request;
 use App\Models\EmployeePayroll;
 use App\Models\EmployeeAttendance;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\StaffShowResource;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\ClientShowResource;
@@ -736,6 +739,111 @@ class AdminController extends Controller
             'data' => new EmployeePayrollResource($payroll),
             'message' => 'Payroll retrieved successfully'
         ]);
+    }
+
+    public function backup()
+    // {
+    //     try {
+    //         // Get all tables
+    //         $tables = DB::select('SHOW TABLES');
+    //         $database = env('DB_DATABASE');
+    //         $key = "Tables_in_$database";
+
+    //         $backupData = [];
+    //         foreach ($tables as $table) {
+    //             $tableName = $table->$key;
+
+    //             // Fetch table data
+    //             $data = DB::table($tableName)->get()->toArray();
+
+    //             $backupData[$tableName] = $data;
+    //         }
+
+    //         // Convert to JSON format
+    //         $backupJson = json_encode($backupData, JSON_PRETTY_PRINT);
+
+    //         // Define the backup file name
+    //         $filename = 'database_backup_' . date('Y_m_d_H_i_s') . '.json';
+
+    //         // Store in local storage (storage/app)
+    //         Storage::put($filename, $backupJson);
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'message' => 'Database backup created successfully!',
+    //             'file' => $filename,
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Failed to backup database.',
+    //             'error' => $e->getMessage(),
+    //         ]);
+    //     }
+    // }
+
+    {
+        try {
+            // Get all tables
+            $tables = DB::select('SHOW TABLES');
+            $database = env('DB_DATABASE');
+            $key = "Tables_in_$database";
+
+            $backupData = '';
+
+            foreach ($tables as $table) {
+                $tableName = $table->$key;
+
+                // Fetch table data
+                $data = DB::table($tableName)->get();
+
+                // Create a basic SQL insert for each table
+                $backupData .= "DROP TABLE IF EXISTS `$tableName`;\n";
+                $columns = Schema::getColumnListing($tableName); // Get column names
+
+                // Generate table creation SQL
+                $createTableSQL = "CREATE TABLE `$tableName` (\n";
+                foreach ($columns as $column) {
+                    $columnType = DB::getSchemaBuilder()->getColumnType($tableName, $column);
+                    $createTableSQL .= "`$column` $columnType,\n";
+                }
+                $createTableSQL = rtrim($createTableSQL, ",\n") . "\n);";
+                $backupData .= $createTableSQL . "\n\n";
+
+                // Generate insert SQL for each row
+                foreach ($data as $row) {
+                    $insertSQL = "INSERT INTO `$tableName` (" . implode(', ', $columns) . ") VALUES (";
+
+                    $values = [];
+                    foreach ($columns as $column) {
+                        $values[] = "'" . addslashes($row->$column) . "'"; // Escape values
+                    }
+
+                    $insertSQL .= implode(', ', $values) . ");\n";
+                    $backupData .= $insertSQL;
+                }
+
+                $backupData .= "\n\n";
+            }
+
+            // Define the backup file name
+            $filename = 'database_backup_' . date('Y_m_d_H_i_s') . '.sql';
+
+            // Store in local storage (storage/app)
+            Storage::put($filename, $backupData);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Database backup created successfully!',
+                'file' => $filename,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to backup database.',
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
 }

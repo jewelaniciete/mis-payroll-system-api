@@ -58,4 +58,7 @@ Route::prefix('admin')->middleware(['auth:api-admin','scopes:admin_user'])->grou
     // --- payroll
     Route::get('/show-staff-payroll', [AdminController::class, 'show_staff_payrolls']);
     Route::post('/store-staff-payroll/{id}', [AdminController::class, 'store_staff_payrolls']);
+
+    // --- backups
+    Route::get('/database/backup', [AdminController::class, 'backup']);
 });
