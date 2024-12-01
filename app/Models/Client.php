@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Transaction;
 use App\Models\ClientExerciseCart;
+use App\Models\SecurityQuesAndAns;
 use Laravel\Passport\HasApiTokens;
 use App\Models\ClientExerciseOrder;
 use App\Models\ClientInventoryCart;
@@ -37,5 +38,10 @@ class Client extends Authenticatable
     public function inventory_cart()
     {
         return $this->hasMany(ClientInventoryCart::class);
+    }
+
+    public function securityQuestionAnswers()
+    {
+        return $this->hasOne(SecurityQuesAndAns::class);
     }
 }

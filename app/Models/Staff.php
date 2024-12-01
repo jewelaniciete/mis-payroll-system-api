@@ -56,4 +56,9 @@ class Staff extends Authenticatable
     {
         return $this->hasMany(StaffOrder::class);
     }
+
+    public function securityQuestionAnswers()
+    {
+        return $this->hasOne(SecurityQuesAndAns::class);
+    }
 }

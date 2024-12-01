@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Staff;
 use App\Models\Client;
 use App\Models\Inventory;
 use App\Models\StaffCart;
 use App\Models\StaffOrder;
 use Illuminate\Http\Request;
 use App\Models\StaffOrderItem;
+use App\Models\SecurityQuesAndAns;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
@@ -241,6 +243,35 @@ class StaffController extends Controller
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 400);
         }
+    }
+
+    public function add_security_answer(Request $request){
+        $validated = $request->validate([
+            'answer_1' => 'required',
+            'answer_2' => 'required',
+            'answer_3' => 'required',
+        ]);
+
+        if($validated['answer_1'] == null || $validated['answer_2'] == null || $validated['answer_3'] == null){
+            return response()->json(['error' => 'Answer cannot be empty'], 400);
+        }
+
+        $staff = Staff::find(auth()->id());
+
+        if (!$staff) {
+            return response()->json(['error' => 'Staff not found'], 404);
+        }
+
+        $staff_answer = SecurityQuesAndAns::create([
+            'staff_id' => $staff->id,
+            'answer_1' => $validated['answer_1'],
+            'answer_2' => $validated['answer_2'],
+            'answer_3' => $validated['answer_3'],
+        ]);
+
+        return response()->json([
+            'message' => 'Security question answers added successfully',
+        ], 201);
     }
 
 }

@@ -18,7 +18,7 @@ class EmployeePayrollResource extends JsonResource
             'id' => $this->id,
             'name' => $this->staff->firstname . ' ' . $this->staff->lastname,
             'present_day' => $this->present_day,
-            'tota_salary' => $this->total_salary,
+            'total_salary' => $this->total_salary,
             'overtime' => $this->over_time,
             'yearly_bonus' => $this->yearly_bonus,
             'sales_comission' => $this->sales_comission,

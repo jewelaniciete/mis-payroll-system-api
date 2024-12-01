@@ -8,6 +8,7 @@ use App\Http\Controllers\API\StaffController;
 
 Route::group(['middleware' => ['guest.api']], function () {
     Route::middleware(['throttle:login'])->post('/login',[AuthController::class, 'login']);
+    Route::post('/reset-password/answers', [AuthController::class, 'question_and_answer']);
 });
 
 Route::prefix('admin')->group(function () {

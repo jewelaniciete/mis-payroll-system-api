@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Client;
 use App\Models\Exercise;
 use App\Models\Inventory;
 use Illuminate\Http\Request;
 use App\Models\ClientExerciseCart;
+use App\Models\SecurityQuesAndAns;
 use Illuminate\Support\Facades\DB;
 use App\Models\ClientExerciseOrder;
 use App\Models\ClientInventoryCart;
@@ -252,6 +254,35 @@ class ClientController extends Controller
             DB::rollBack();
             return response()->json(['message' => 'Checkout failed', 'error' => $e->getMessage()], 400);
         }
+    }
+
+    public function add_security_answer(Request $request){
+        $validated = $request->validate([
+            'answer_1' => 'required',
+            'answer_2' => 'required',
+            'answer_3' => 'required',
+        ]);
+
+        if($validated['answer_1'] == null || $validated['answer_2'] == null || $validated['answer_3'] == null){
+            return response()->json(['error' => 'Answer cannot be empty'], 400);
+        }
+
+        $client = Client::find(auth()->id());
+
+        if (!$client) {
+            return response()->json(['error' => 'Client not found'], 404);
+        }
+
+        $client_answer = SecurityQuesAndAns::create([
+            'client_id' => $client->id,
+            'answer_1' => $validated['answer_1'],
+            'answer_2' => $validated['answer_2'],
+            'answer_3' => $validated['answer_3'],
+        ]);
+
+        return response()->json([
+            'message' => 'Security question answers added successfully',
+        ], 201);
     }
 
 }
