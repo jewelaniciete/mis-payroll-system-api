@@ -11,11 +11,13 @@ use App\Models\EmploymentHistory;
 use App\Models\EmployeeAttendance;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class Staff extends Authenticatable
 {
+    use SoftDeletes;
     use HasFactory, HasApiTokens;
 
     protected $fillable = ['position_id','email', 'password', 'firstname', 'lastname', 'address', 'gender', 'contact_no', 'is_active'];

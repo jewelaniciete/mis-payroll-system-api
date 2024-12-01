@@ -138,7 +138,7 @@ class AdminController extends Controller
         $delete->forceDelete();
 
         return response()->json([
-            'message' => 'Client permanently deleted successfully'
+            'message' => 'Client was permanently deleted'
         ]);
     }
 
@@ -245,15 +245,43 @@ class AdminController extends Controller
     }
 
     public function soft_delete_staffs(Request $request, $id){
-        //
+        $staff = Staff::find($id);
+
+        if (!$staff) {
+            return response()->json(['message' => 'Staff not found'], 404);
+        }
+
+        $staff->delete();
+
+        return response()->json(['message' => 'Staff deleted successfully'], 200);
     }
 
-    public function hard_delete_staffs(Request $request, $id){
-        //
+    public function trashed_record_staffs(){
+        $trashed = Staff::onlyTrashed()->get();
+
+        return response()->json([
+            'data' => StaffShowResource::collection($trashed),
+            'message' => 'Trashed records retrieved successfully'
+        ]);
+    }
+
+    public function force_delete_staffs(Request $request, $id){
+        $delete = Staff::withTrashed()->find($id);
+        $delete->forceDelete();
+
+        return response()->json([
+            'message' => 'Staff was permanently deleted'
+        ]);
     }
 
     public function restore_staffs(Request $request, $id){
-        //
+        $restore = Staff::withTrashed()->find($id);
+        $restore->restore();
+
+        return response()->json([
+            'message' => 'Staff restored successfully',
+            'data' => new StaffShowResource($restore)
+        ]);
     }
 
     public function show_exercises(){
