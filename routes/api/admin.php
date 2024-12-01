@@ -14,6 +14,11 @@ Route::prefix('admin')->middleware(['auth:api-admin','scopes:admin_user'])->grou
     Route::get('/edit-client/{id}', [AdminController::class, 'edit_clients']);
     Route::post('/update-client/{id}', [AdminController::class, 'update_clients']);
 
+    Route::post('/soft-delete-client/{id}', [AdminController::class, 'soft_delete_clients']);       // soft delete
+    Route::get('/archive-client', [AdminController::class, 'trashed_record_clients']);              // used to display archived records
+    Route::post('/force-delete-client/{id}', [AdminController::class, 'force_delete_clients']);     // used to permanently delete records in archive
+    Route::post('/restore-client/{id}', [AdminController::class, 'restore_clients']);               // used to restore deleted records in archive
+
     Route::get('/show-staff', [AdminController::class, 'show_staffs']);
     Route::post('/store-staff', [AdminController::class, 'store_staffs']);
     Route::get('/edit-staff/{id}', [AdminController::class, 'edit_staffs']);

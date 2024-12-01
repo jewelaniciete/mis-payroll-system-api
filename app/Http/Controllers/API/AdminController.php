@@ -113,15 +113,43 @@ class AdminController extends Controller
     }
 
     public function soft_delete_clients(Request $request, $id){
-        //
+        $client = Client::find($id);
+
+        if (!$client) {
+            return response()->json(['message' => 'Client not found'], 404);
+        }
+
+        $client->delete();
+
+        return response()->json(['message' => 'Client deleted successfully'], 200);
     }
 
-    public function hard_delete_clients(Request $request, $id){
-        //
+    public function trashed_record_clients(){
+        $trashed = Client::onlyTrashed()->get();
+
+        return response()->json([
+            'data' => ClientShowResource::collection($trashed),
+            'message' => 'Clients retrieved successfully'
+        ]);
+    }
+
+    public function force_delete_clients(Request $request, $id){
+        $delete = Client::withTrashed()->find($id);
+        $delete->forceDelete();
+
+        return response()->json([
+            'message' => 'Client permanently deleted successfully'
+        ]);
     }
 
     public function restore_clients(Request $request, $id){
-        //
+        $restore = Client::withTrashed()->find($id);
+        $restore->restore();
+
+        return response()->json([
+            'message' => 'Client restored successfully',
+            'data' => new ClientShowResource($restore)
+        ]);
     }
 
     public function show_staffs(){
