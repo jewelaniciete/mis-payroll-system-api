@@ -18,7 +18,7 @@ class EmployeePayrollResource extends JsonResource
             'id' => $this->id,
             'name' => $this->staff->firstname . ' ' . $this->staff->lastname,
             'present_day' => $this->present_day,
-            'salary' => $this->salary,
+            'tota_salary' => $this->total_salary,
             'overtime' => $this->over_time,
             'yearly_bonus' => $this->yearly_bonus,
             'sales_comission' => $this->sales_comission,
@@ -29,6 +29,10 @@ class EmployeePayrollResource extends JsonResource
             'net_income' => $this->net_income,
             'total_deductions' => $this->total_deductions,
             'final_salary' => $this->final_salary,
+            'start_date' => $this->start_date,
+            'end_date' => $this->end_date,
+            'pay_date' => $this->pay_date
+
         ];
     }
 }

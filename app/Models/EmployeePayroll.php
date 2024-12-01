@@ -13,7 +13,9 @@ class EmployeePayroll extends Model
     protected $fillable = [
         'staff_id',
         'present_day',
-        'salary',
+        'total_salary',
+        'whole_day_salary',
+        'half_day_salart',
         'overtime',
         'yearly_bonus',
         'sales_comission',
@@ -26,6 +28,7 @@ class EmployeePayroll extends Model
         'final_salary',
         'start_date',
         'end_date',
+        'pay_date',
     ];
 
     public function staff()

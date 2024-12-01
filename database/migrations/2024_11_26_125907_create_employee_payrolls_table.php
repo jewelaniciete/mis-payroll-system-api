@@ -16,7 +16,9 @@ return new class extends Migration
             $table->unsignedBigInteger('staff_id');
             $table->foreign('staff_id')->references('id')->on('staff')->onDelete('cascade');
             $table->integer('present_day')->nullable();
-            $table->decimal('salary')->nullable();
+            $table->decimal('total_salary')->nullable();
+            $table->decimal('whole_day_salary')->nullable();
+            $table->decimal('half_day_salary')->nullable();
             $table->decimal('over_time')->nullable();
             $table->decimal('yearly_bonus')->nullable();
             $table->decimal('sales_comission')->nullable();
@@ -29,6 +31,7 @@ return new class extends Migration
             $table->decimal('final_salary')->nullable();
             $table->date('start_date');
             $table->date('end_date');
+            $table->date('pay_date');
             $table->timestamps();
         });
     }

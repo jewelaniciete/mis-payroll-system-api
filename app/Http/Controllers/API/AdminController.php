@@ -672,11 +672,13 @@ class AdminController extends Controller
             'staff_id' => 'required',
             'start_date' => 'required',
             'end_date' => 'required',
+            'pay_date' => 'required'
         ]);
 
         $id = $staff->id;
         $start_date = $request->start_date;
         $end_date = $request->end_date;
+        $pay_date = $request->pay_date;
 
         $query = EmployeeAttendance::query()
         ->when($id, function ($query, $id) {
@@ -693,12 +695,15 @@ class AdminController extends Controller
         // $present_days = $query->count();
 
         $whole_days = $query->clone()->where('attendance', 'present')->count();
-
         $half_days = $query->clone()->where('attendance', 'halfday')->count();
 
         $present_day = $whole_days + ($half_days / 2);
 
-        $salary = 450 * $present_day;
+        $whole_day_salary = 450 * $whole_days;
+
+        $half_day_salary = 225 * $half_days;
+
+        $total_salary = $whole_day_salary + $half_day_salary;
 
         // Additional Incomes
         $overtime = $request->over_time;
@@ -706,7 +711,7 @@ class AdminController extends Controller
         $sales_comission = $request->sales_comission;
         $incentives = $request->incentives;
 
-        $net_income = $salary + $overtime + $yearly_bonus + $sales_comission + $incentives;
+        $net_income = $total_salary + $overtime + $yearly_bonus + $sales_comission + $incentives;
 
         // Deductions
         $sss = (0.02 * $net_income) / 2;
@@ -720,7 +725,9 @@ class AdminController extends Controller
         $payroll = EmployeePayroll::create([
             'staff_id' => $staff->id,
             'present_day' => $present_day,
-            'salary' => $salary,
+            'total_salary' => $total_salary,
+            'whole_day_salary' => $whole_day_salary,
+            'half_day_salary' => $half_day_salary,
             'over_time' => $overtime,
             'yearly_bonus' => $yearly_bonus,
             'sales_comission' => $sales_comission,
@@ -733,6 +740,7 @@ class AdminController extends Controller
             'final_salary' => $final_salary,
             'start_date' => $start_date,
             'end_date' => $end_date,
+            'pay_date' => $pay_date
         ]);
 
         return response()->json([
@@ -742,46 +750,6 @@ class AdminController extends Controller
     }
 
     public function backup()
-    // {
-    //     try {
-    //         // Get all tables
-    //         $tables = DB::select('SHOW TABLES');
-    //         $database = env('DB_DATABASE');
-    //         $key = "Tables_in_$database";
-
-    //         $backupData = [];
-    //         foreach ($tables as $table) {
-    //             $tableName = $table->$key;
-
-    //             // Fetch table data
-    //             $data = DB::table($tableName)->get()->toArray();
-
-    //             $backupData[$tableName] = $data;
-    //         }
-
-    //         // Convert to JSON format
-    //         $backupJson = json_encode($backupData, JSON_PRETTY_PRINT);
-
-    //         // Define the backup file name
-    //         $filename = 'database_backup_' . date('Y_m_d_H_i_s') . '.json';
-
-    //         // Store in local storage (storage/app)
-    //         Storage::put($filename, $backupJson);
-
-    //         return response()->json([
-    //             'status' => 'success',
-    //             'message' => 'Database backup created successfully!',
-    //             'file' => $filename,
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'status' => 'error',
-    //             'message' => 'Failed to backup database.',
-    //             'error' => $e->getMessage(),
-    //         ]);
-    //     }
-    // }
-
     {
         try {
             // Get all tables
