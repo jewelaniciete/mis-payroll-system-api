@@ -39,8 +39,4 @@ class Client extends Authenticatable
         return $this->hasMany(ClientInventoryCart::class);
     }
 
-    public function securityQuestionAnswers()
-    {
-        return $this->hasOne(SecurityQuesAndAns::class);
-    }
 }

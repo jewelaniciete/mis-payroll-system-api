@@ -21,7 +21,8 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             ClientSeeder::class,
             ExerciseSeeder::class,
-            InventorySeeder::class
+            InventorySeeder::class,
+            SecurityAnswer::class
         ]);
     }
 }

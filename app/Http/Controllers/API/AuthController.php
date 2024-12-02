@@ -175,19 +175,16 @@ class AuthController extends Controller
             'confirm_password' => 'required|same:new_password',
         ]);
 
-        $user = Client::where('email', $validated['email'])->first();
+        $admin = Admin::where('email', $validated['email'])->first();
 
-        if (!$user) {
-            // Check if user exists in Staff table
-            $user = Staff::where('email', $validated['email'])->first();
-        }
 
-        if (!$user) {
-            return response()->json(['error' => 'User not found.'], 404);
+
+        if (!$admin) {
+            return response()->json(['error' => 'Email not found.'], 404);
         }
 
         // Get the security answers
-        $securityAnswers = $user->securityQuestionAnswers;
+        $securityAnswers = $admin->securityQuestionAnswers;
 
         if (
             $securityAnswers->answer_1 !== $validated['answer_1'] ||
@@ -201,7 +198,7 @@ class AuthController extends Controller
             return response()->json(['error' => 'Passwords do not match.'], 400);
         }
 
-        $user->update(['password' => bcrypt($validated['new_password'])]);
+        $admin->update(['password' => bcrypt($validated['new_password'])]);
 
         return response()->json([
             'Message' => 'Password updated successfully.',
