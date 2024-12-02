@@ -25,6 +25,7 @@ return new class extends Migration
             $table->date('joined_date');
             $table->boolean('is_active')->default(1);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

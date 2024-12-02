@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('contact_no')->nullable();
             $table->boolean('is_active')->default(1);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

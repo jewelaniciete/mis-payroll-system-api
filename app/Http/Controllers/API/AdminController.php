@@ -9,8 +9,12 @@ use App\Models\Exercise;
 use App\Models\Position;
 use App\Models\Inventory;
 use Illuminate\Http\Request;
+use App\Models\EmployeePayroll;
 use App\Models\EmployeeAttendance;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\StaffShowResource;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\ClientShowResource;
@@ -18,6 +22,7 @@ use App\Http\Responses\ValidationResponse;
 use App\Http\Resources\ExerciseShowResource;
 use App\Http\Resources\PositionShowResource;
 use App\Http\Resources\InventoryShowResource;
+use App\Http\Resources\EmployeePayrollResource;
 use App\Http\Resources\EmployeeAttendanceResource;
 
 class AdminController extends Controller
@@ -85,7 +90,6 @@ class AdminController extends Controller
             'firstname' => 'required',
             'lastname' => 'required',
             'email' => 'required|email',
-            'password' => 'required',
             'address' => 'required',
             'gender' => 'required',
             'contact_no' => 'required'
@@ -112,15 +116,43 @@ class AdminController extends Controller
     }
 
     public function soft_delete_clients(Request $request, $id){
-        //
+        $client = Client::find($id);
+
+        if (!$client) {
+            return response()->json(['message' => 'Client not found'], 404);
+        }
+
+        $client->delete();
+
+        return response()->json(['message' => 'Client deleted successfully'], 200);
     }
 
-    public function hard_delete_clients(Request $request, $id){
-        //
+    public function trashed_record_clients(){
+        $trashed = Client::onlyTrashed()->get();
+
+        return response()->json([
+            'data' => ClientShowResource::collection($trashed),
+            'message' => 'Clients retrieved successfully'
+        ]);
+    }
+
+    public function force_delete_clients(Request $request, $id){
+        $delete = Client::withTrashed()->find($id);
+        $delete->forceDelete();
+
+        return response()->json([
+            'message' => 'Client was permanently deleted'
+        ]);
     }
 
     public function restore_clients(Request $request, $id){
-        //
+        $restore = Client::withTrashed()->find($id);
+        $restore->restore();
+
+        return response()->json([
+            'message' => 'Client restored successfully',
+            'data' => new ClientShowResource($restore)
+        ]);
     }
 
     public function show_staffs(){
@@ -192,7 +224,6 @@ class AdminController extends Controller
             'firstname' => 'required',
             'lastname' => 'required',
             'email' => 'required|email',
-            'password' => 'required',
             'address' => 'required',
             'gender' => 'required',
             'contact_no' => 'required'
@@ -220,15 +251,43 @@ class AdminController extends Controller
     }
 
     public function soft_delete_staffs(Request $request, $id){
-        //
+        $staff = Staff::find($id);
+
+        if (!$staff) {
+            return response()->json(['message' => 'Staff not found'], 404);
+        }
+
+        $staff->delete();
+
+        return response()->json(['message' => 'Staff deleted successfully'], 200);
     }
 
-    public function hard_delete_staffs(Request $request, $id){
-        //
+    public function trashed_record_staffs(){
+        $trashed = Staff::onlyTrashed()->get();
+
+        return response()->json([
+            'data' => StaffShowResource::collection($trashed),
+            'message' => 'Trashed records retrieved successfully'
+        ]);
+    }
+
+    public function force_delete_staffs(Request $request, $id){
+        $delete = Staff::withTrashed()->find($id);
+        $delete->forceDelete();
+
+        return response()->json([
+            'message' => 'Staff was permanently deleted'
+        ]);
     }
 
     public function restore_staffs(Request $request, $id){
-        //
+        $restore = Staff::withTrashed()->find($id);
+        $restore->restore();
+
+        return response()->json([
+            'message' => 'Staff restored successfully',
+            'data' => new StaffShowResource($restore)
+        ]);
     }
 
     public function show_exercises(){
@@ -501,7 +560,7 @@ class AdminController extends Controller
             ], 404);
         }
 
-        $today = Carbon::now()->format('Y/m/d');
+        $today = Carbon::now()->format('Y-m-d');
 
         if($request->date != $today){
             return response()->json([
@@ -509,7 +568,8 @@ class AdminController extends Controller
             ], 400);
         }
 
-        $attendance = EmployeeAttendance::where('staff_id', $staff->id)->where('date', $today)->first();
+        $attendance = EmployeeAttendance::where('staff_id', $staff->id)
+                        ->where('date', $today)->first();
 
         if($attendance){
             return response()->json([
@@ -592,6 +652,169 @@ class AdminController extends Controller
 
     public function restore_staff_attendances(Request $request, $id){
         //
+    }
+
+    public function show_staff_payrolls(){
+        $payroll = EmployeePayroll::with('staff')->get();
+
+        return response()->json([
+            'data' => EmployeePayrollResource::collection($payroll),
+            'message' => 'Payroll retrieved successfully',
+        ], 200);
+    }
+
+    public function store_staff_payrolls(Request $request, $id){
+        $staff = Staff::find($id);
+        if(!$staff){
+            return response()->json([
+                'message' => 'Staff not found'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'staff_id' => 'required',
+            'start_date' => 'required',
+            'end_date' => 'required',
+            'pay_date' => 'required'
+        ]);
+
+        $id = $staff->id;
+        $start_date = $request->start_date;
+        $end_date = $request->end_date;
+        $pay_date = $request->pay_date;
+
+        $query = EmployeeAttendance::query()
+        ->when($id, function ($query, $id) {
+            return $query->where('id', $id);
+        })
+        ->when($start_date, function ($query, $start_date) {
+            return $query->whereDate('date', '>=', $start_date);
+        })
+        ->when($end_date, function ($query, $end_date) {
+            return $query->whereDate('date', '<=', $end_date);
+        });
+
+        // $filteredData = $query->with('staff.position')->get();
+        // $present_days = $query->count();
+
+        $whole_days = $query->clone()->where('attendance', 'present')->count();
+        $half_days = $query->clone()->where('attendance', 'halfday')->count();
+
+        $present_day = $whole_days + ($half_days / 2);
+
+        $whole_day_salary = 450 * $whole_days;
+
+        $half_day_salary = 225 * $half_days;
+
+        $total_salary = $whole_day_salary + $half_day_salary;
+
+        // Additional Incomes
+        $overtime = $request->over_time;
+        $yearly_bonus = $request->yearly_bonus;
+        $sales_comission = $request->sales_comission;
+        $incentives = $request->incentives;
+
+        $net_income = $total_salary + $overtime + $yearly_bonus + $sales_comission + $incentives;
+
+        // Deductions
+        $sss = (0.02 * $net_income) / 2;
+        $pag_ibig = (0.02 * $net_income) / 2;
+        $philhealth = (0.02 * $net_income) / 2;
+
+        $total_deductions = $sss + $pag_ibig + $philhealth;
+
+        $final_salary = $net_income - $total_deductions;
+
+        $payroll = EmployeePayroll::create([
+            'staff_id' => $staff->id,
+            'present_day' => $present_day,
+            'total_salary' => $total_salary,
+            'whole_day_salary' => $whole_day_salary,
+            'half_day_salary' => $half_day_salary,
+            'over_time' => $overtime,
+            'yearly_bonus' => $yearly_bonus,
+            'sales_comission' => $sales_comission,
+            'incentives' => $incentives,
+            'sss' => $sss,
+            'pag_ibig' => $pag_ibig,
+            'philhealth' => $philhealth,
+            'net_income' => $net_income,
+            'total_deductions' => $total_deductions,
+            'final_salary' => $final_salary,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+            'pay_date' => $pay_date
+        ]);
+
+        return response()->json([
+            'data' => new EmployeePayrollResource($payroll),
+            'message' => 'Payroll retrieved successfully'
+        ]);
+    }
+
+    public function backup()
+    {
+        try {
+            // Get all tables
+            $tables = DB::select('SHOW TABLES');
+            $database = env('DB_DATABASE');
+            $key = "Tables_in_$database";
+
+            $backupData = '';
+
+            foreach ($tables as $table) {
+                $tableName = $table->$key;
+
+                // Fetch table data
+                $data = DB::table($tableName)->get();
+
+                // Create a basic SQL insert for each table
+                $backupData .= "DROP TABLE IF EXISTS `$tableName`;\n";
+                $columns = Schema::getColumnListing($tableName); // Get column names
+
+                // Generate table creation SQL
+                $createTableSQL = "CREATE TABLE `$tableName` (\n";
+                foreach ($columns as $column) {
+                    $columnType = DB::getSchemaBuilder()->getColumnType($tableName, $column);
+                    $createTableSQL .= "`$column` $columnType,\n";
+                }
+                $createTableSQL = rtrim($createTableSQL, ",\n") . "\n);";
+                $backupData .= $createTableSQL . "\n\n";
+
+                // Generate insert SQL for each row
+                foreach ($data as $row) {
+                    $insertSQL = "INSERT INTO `$tableName` (" . implode(', ', $columns) . ") VALUES (";
+
+                    $values = [];
+                    foreach ($columns as $column) {
+                        $values[] = "'" . addslashes($row->$column) . "'"; // Escape values
+                    }
+
+                    $insertSQL .= implode(', ', $values) . ");\n";
+                    $backupData .= $insertSQL;
+                }
+
+                $backupData .= "\n\n";
+            }
+
+            // Define the backup file name
+            $filename = 'database_backup_' . date('Y_m_d_H_i_s') . '.sql';
+
+            // Store in local storage (storage/app)
+            Storage::put($filename, $backupData);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Database backup created successfully!',
+                'file' => $filename,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to backup database.',
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
 }

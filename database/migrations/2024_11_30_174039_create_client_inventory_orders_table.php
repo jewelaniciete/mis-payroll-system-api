@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('employee_attendances', function (Blueprint $table) {
+        Schema::create('client_inventory_orders', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('staff_id');
-            $table->foreign('staff_id')->references('id')->on('staff')->onDelete('cascade');
-            $table->enum('attendance', ['present', 'absent', 'halfday'])->default('absent');
-            $table->date('date');
+            $table->unsignedBigInteger('client_id');
+            $table->foreign('client_id')->references('id')->on('staff')->onDelete('cascade');
+            $table->decimal('total_amount', 10, 2);
+            $table->enum('status', ['pending', 'paid', 'cancelled'])->default('pending');
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('employee_attendances');
+        Schema::dropIfExists('client_inventory_orders');
     }
 };

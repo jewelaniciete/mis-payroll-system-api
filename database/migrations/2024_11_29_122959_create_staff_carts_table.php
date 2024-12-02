@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('employee_attendances', function (Blueprint $table) {
+        Schema::create('staff_carts', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('staff_id');
             $table->foreign('staff_id')->references('id')->on('staff')->onDelete('cascade');
-            $table->enum('attendance', ['present', 'absent', 'halfday'])->default('absent');
-            $table->date('date');
+            $table->unsignedBigInteger('inventory_id');
+            $table->foreign('inventory_id')->references('id')->on('inventories')->onDelete('cascade');
+            $table->integer('quantity');
+            $table->decimal('price', 8, 2);
             $table->timestamps();
         });
     }
@@ -26,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('employee_attendances');
+        Schema::dropIfExists('staff_carts');
     }
 };

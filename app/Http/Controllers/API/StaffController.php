@@ -2,8 +2,15 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Staff;
 use App\Models\Client;
+use App\Models\Inventory;
+use App\Models\StaffCart;
+use App\Models\StaffOrder;
 use Illuminate\Http\Request;
+use App\Models\StaffOrderItem;
+use App\Models\SecurityQuesAndAns;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\ClientShowResource;
@@ -74,7 +81,6 @@ class StaffController extends Controller
             'firstname' => 'required',
             'lastname' => 'required',
             'email' => 'required|email',
-            'password' => 'required',
             'address' => 'required',
             'gender' => 'required',
             'contact_no' => 'required'
@@ -111,4 +117,161 @@ class StaffController extends Controller
     public function restore_clients(Request $request, $id){
         //
     }
+
+    public function add_to_cart(Request $request){
+        $validated = $request->validate([
+            'items' => 'required|array',
+            'items.*.product_id' => 'required|exists:inventories,id',
+            'items.*.quantity' => 'required|integer|min:1',
+        ]);
+
+        foreach ($validated['items'] as $item) {
+            $product = Inventory::find($item['product_id']);
+
+            if (!$product) {
+                return response()->json(['error' => "Product with ID {$item['product_id']} not found"], 404);
+            }
+
+            $basePrice = $product->price;
+            $quantity = $item['quantity'];
+
+            // Calculate the total price based on the quantity
+            $price = $basePrice * $quantity;
+
+            // Check if the product is already in the cart
+            $cartItem = StaffCart::where('inventory_id', $product->id)
+                ->where('staff_id', auth()->id())
+                ->first();
+
+            if ($cartItem) {
+                // Update quantity if the product is already in the cart
+                $cartItem->quantity += $item['quantity'];
+                $cartItem->price = $basePrice * $cartItem->quantity;
+                $cartItem->save();
+            } else {
+                // Add new item to the cart
+                StaffCart::create([
+                    'staff_id' => auth()->id(),
+                    'inventory_id' => $product->id,
+                    'quantity' => $quantity,
+                    'price' => $price,
+                ]);
+            }
+        }
+
+        return response()->json(['message' => 'Products added to cart successfully'], 200);
+    }
+
+    public function remove_item(Request $request)
+    {
+        $user = auth()->user(); // Assumes user is authenticated
+
+        // Validate input
+        $request->validate([
+            'product_id' => 'required|exists:inventories,id',
+        ]);
+
+        $productId = $request->input('product_id');
+
+        // Find the cart item
+        $cartItem = StaffCart::where('staff_id', $user->id)
+            ->where('inventory_id', $productId)
+            ->first();
+
+        if (!$cartItem) {
+            return response()->json(['error' => 'Item not found in cart'], 404);
+        }
+
+        // Remove the cart item
+        $cartItem->delete();
+
+        return response()->json([
+            'message' => 'Item removed from cart successfully',
+        ], 200);
+    }
+
+    public function checkout(Request $request)
+    {
+        $user = auth()->user();
+
+        // Fetch user's cart items
+        $cartItems = StaffCart::where('staff_id', $user->id)->with('product')->get();
+
+        if ($cartItems->isEmpty()) {
+            return response()->json(['error' => 'Your cart is empty'], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Create an order
+            $order = StaffOrder::create([
+                'staff_id' => $user->id,
+                'total_amount' => $cartItems->sum(function ($item) {
+                    return $item->quantity * $item->product->price;
+                }),
+                'status' => 'pending', // Status can be pending, paid, etc.
+            ]);
+
+            // Create order items and adjust product stock
+            foreach ($cartItems as $item) {
+                if ($item->product->quantity < $item->quantity) {
+                    throw new \Exception("Insufficient stock for product: {$item->product->name}");
+                }
+
+                StaffOrderItem::create([
+                    'order_id' => $order->id,
+                    'inventory_id' => $item->inventory_id,
+                    'quantity' => $item->quantity,
+                    'price' => $item->product->price * $item->quantity,
+                ]);
+
+                // Reduce product stock
+                $item->product->decrement('quantity', $item->quantity);
+            }
+
+            // Clear user's cart
+            StaffCart::where('staff_id', $user->id)->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Checkout successful',
+                'order_id' => $order->id,
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    public function add_security_answer(Request $request){
+        $validated = $request->validate([
+            'answer_1' => 'required',
+            'answer_2' => 'required',
+            'answer_3' => 'required',
+        ]);
+
+        if($validated['answer_1'] == null || $validated['answer_2'] == null || $validated['answer_3'] == null){
+            return response()->json(['error' => 'Answer cannot be empty'], 400);
+        }
+
+        $staff = Staff::find(auth()->id());
+
+        if (!$staff) {
+            return response()->json(['error' => 'Staff not found'], 404);
+        }
+
+        $staff_answer = SecurityQuesAndAns::create([
+            'staff_id' => $staff->id,
+            'answer_1' => $validated['answer_1'],
+            'answer_2' => $validated['answer_2'],
+            'answer_3' => $validated['answer_3'],
+        ]);
+
+        return response()->json([
+            'message' => 'Security question answers added successfully',
+        ], 201);
+    }
+
 }

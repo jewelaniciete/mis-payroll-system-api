@@ -167,11 +167,12 @@ class AuthController extends Controller
     {
         $user = auth()->user();
         if(!$user) return new ErrorResponse(message: 'Unauthenticated', code: Response::HTTP_UNAUTHORIZED);
-        $user_type = check_user_type();
+
+        $user_type = $this->check_user_type($user);
 
         $resources = [
             'staff' => StaffResource::class,
-            'employee' => EmployeeResource::class,
+            'client' => ClientResource::class,
             'admin' => AdminResource::class,
         ];
 
@@ -187,13 +188,14 @@ class AuthController extends Controller
 
     private function check_user_type($user)
     {
-        if ($user->is_admin) {
-            return 'admin';
-        } elseif ($user->is_staff) {
+        if (Auth::check() && auth()->user()->tokenCan('staff_user')) {
             return 'staff';
-        } else {
+        } else if (Auth::check() && auth()->user()->tokenCan('client_user')) {
             return 'client';
+        } else if (Auth::check() && auth()->user()->tokenCan('admin_user')) {
+            return 'admin';
         }
+        return null;
     }
 
     public function logout(Request $request)
@@ -208,4 +210,49 @@ class AuthController extends Controller
             return new ErrorResponse(message: 'Error Occured', code : Response::HTTP_BAD_REQUEST, e: $e);
         }
     }
+
+    public function question_and_answer(Request $request){
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'answer_1' => 'required',
+            'answer_2' => 'required',
+            'answer_3' => 'required',
+            'new_password' => 'required',
+            'confirm_password' => 'required|same:new_password',
+        ]);
+
+        $user = Client::where('email', $validated['email'])->first();
+
+        if (!$user) {
+            // Check if user exists in Staff table
+            $user = Staff::where('email', $validated['email'])->first();
+        }
+
+        if (!$user) {
+            return response()->json(['error' => 'User not found.'], 404);
+        }
+
+        // Get the security answers
+        $securityAnswers = $user->securityQuestionAnswers;
+
+        if (
+            $securityAnswers->answer_1 !== $validated['answer_1'] ||
+            $securityAnswers->answer_2 !== $validated['answer_2'] ||
+            $securityAnswers->answer_3 !== $validated['answer_3']
+        ) {
+            return response()->json(['error' => 'Incorrect answers.'], 400);
+        }
+
+        if ($validated['new_password'] !== $validated['confirm_password']) {
+            return response()->json(['error' => 'Passwords do not match.'], 400);
+        }
+
+        $user->update(['password' => bcrypt($validated['new_password'])]);
+
+        return response()->json([
+            'Message' => 'Password updated successfully.',
+        ], 200);
+    }
+
+
 }
