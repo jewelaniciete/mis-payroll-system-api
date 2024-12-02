@@ -15,7 +15,6 @@ class ClientSeeder extends Seeder
     {
         Client::create([
             "email" => "client@company.com",
-            "password" => bcrypt("password"),
             "firstname" => "Maria",
             "lastname" => "Doe",
             "address" => "Metro Manila",

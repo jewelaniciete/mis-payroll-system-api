@@ -43,9 +43,9 @@ class AuthController extends Controller
 
         $auth_user = $this->findUserByPassword($staffs, $credentials['password']);
 
-        if(!$auth_user) //check client next
+        if(!$auth_user) //check admin next
         {
-            return $this->loginClient($request);
+            return $this->loginAdmin($request);
         }
 
         if (!Auth::guard('api-staff')->setUser($auth_user))
@@ -68,49 +68,6 @@ class AuthController extends Controller
                 'expires_at' => $tokenResult->token->expires_at->toDateTimeString(),
             ]
         );
-    }
-
-    public function loginClient(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 422);
-        }
-
-        $credentials = request(['email', 'password','remember_me']);
-
-        $clients = Client::where('email',$credentials['email'])->get();
-        $auth_user = $this->findUserByPassword($clients, $credentials['password']);
-
-        if(!$auth_user) //check admin next
-        {
-            return $this->loginAdmin($request);
-        }
-
-        if (!Auth::guard('api-client')->setUser($auth_user)) {
-            return (new ErrorResponse())->unauthorize();
-        }
-
-        $client = Auth::guard('api-client')->user();
-
-        if((int)($credentials['remember_me']) == 1)  Passport::personalAccessTokensExpireIn(\Carbon\Carbon::now()->addDays(30));
-        else Passport::personalAccessTokensExpireIn(Carbon::now()->addDays(1));
-
-        $tokenResult = $client->createToken('Client Token', ['client_user']);
-        $token = $tokenResult->token;
-
-        $token->save();
-        return new SuccessResponse(
-            ClientResource::make($client),
-        [
-            'access_token' => $tokenResult->accessToken,
-            'token_type' => 'Bearer',
-            'expires_at' => $tokenResult->token->expires_at->toDateTimeString(),
-        ]);
     }
 
     public function loginAdmin(Request $request)
@@ -172,7 +129,6 @@ class AuthController extends Controller
 
         $resources = [
             'staff' => StaffResource::class,
-            'client' => ClientResource::class,
             'admin' => AdminResource::class,
         ];
 
@@ -190,8 +146,6 @@ class AuthController extends Controller
     {
         if (Auth::check() && auth()->user()->tokenCan('staff_user')) {
             return 'staff';
-        } else if (Auth::check() && auth()->user()->tokenCan('client_user')) {
-            return 'client';
         } else if (Auth::check() && auth()->user()->tokenCan('admin_user')) {
             return 'admin';
         }

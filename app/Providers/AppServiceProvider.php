@@ -41,7 +41,6 @@ class AppServiceProvider extends ServiceProvider
         Passport::tokensCan([
             "admin_user" => 'Admin API User',
             "staff_user" => 'Staff API User',
-            "client_user" => 'Client API User',
         ]);
 
         return;

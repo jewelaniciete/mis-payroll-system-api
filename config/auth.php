@@ -44,10 +44,6 @@ return [
             'driver' => 'passport',
             'provider' => 'admins',
         ],
-        'api-client' => [
-            'driver' => 'passport',
-            'provider' => 'clients',
-        ],
         'api-staff' => [
             'driver' => 'passport',
             'provider' => 'staffs',
@@ -79,10 +75,6 @@ return [
         'admins' => [
             'driver' => 'eloquent',
             'model' => \App\Models\Admin::class,
-        ],
-        'clients' => [
-            'driver' => 'eloquent',
-            'model' => \App\Models\Client::class,
         ],
         'staffs' => [
             'driver' => 'eloquent',

@@ -37,7 +37,6 @@ class AdminController extends Controller
             'firstname' => 'required',
             'lastname' => 'required',
             'email' => 'required|email',
-            'password' => 'required',
             'address' => 'required',
             'gender' => 'required',
             'contact_no' => 'required'
@@ -51,7 +50,6 @@ class AdminController extends Controller
             'firstname' => $request->firstname,
             'lastname' => $request->lastname,
             'email' => $request->email,
-            'password' => bcrypt($request->password),
             'address' => $request->address,
             'gender' => $request->gender,
             'contact_no' => $request->contact_no
@@ -103,7 +101,6 @@ class AdminController extends Controller
             'firstname' => $request->firstname,
             'lastname' => $request->lastname,
             'email' => $request->email,
-            'password' => bcrypt($request->password),
             'address' => $request->address,
             'gender' => $request->gender,
             'contact_no' => $request->contact_no

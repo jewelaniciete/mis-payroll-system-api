@@ -18,8 +18,7 @@ class Client extends Authenticatable
     use SoftDeletes;
     use HasFactory, HasApiTokens;
 
-    protected $fillable = ['email', 'password', 'firstname', 'lastname', 'address', 'gender', 'contact_no', 'is_active'];
-    protected $hidden = ['password'];
+    protected $fillable = ['email', 'firstname', 'lastname', 'address', 'gender', 'contact_no', 'is_active'];
 
     public function transaction()
     {
