@@ -8,6 +8,7 @@ use App\Models\SecurityQuesAndAns;
 use Laravel\Passport\HasApiTokens;
 use App\Models\ClientExerciseOrder;
 use App\Models\ClientInventoryCart;
+use App\Models\ExerciseTransaction;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,19 +25,10 @@ class Client extends Authenticatable
     {
         return $this->hasMany(Transaction::class, 'client_id');
     }
-    public function cart()
-    {
-        return $this->hasMany(ClientExerciseCart::class);
-    }
 
-    public function orders()
+    public function exerciseTransactions()
     {
-        return $this->hasMany(ClientExerciseOrder::class);
-    }
-
-    public function inventory_cart()
-    {
-        return $this->hasMany(ClientInventoryCart::class);
+        return $this->hasMany(ExerciseTransaction::class);
     }
 
 }
