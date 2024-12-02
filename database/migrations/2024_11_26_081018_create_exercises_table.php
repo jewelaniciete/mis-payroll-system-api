@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->decimal('price');
-            $table->enum('plan', ['session', 'monthly'])->default('session');
+            $table->enum('tag', ['session', 'monthly'])->default('session');
+            $table->string('short_description')->nullable();
             $table->string('image')->nullable();
             $table->timestamps();
         });

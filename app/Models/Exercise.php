@@ -13,7 +13,8 @@ class Exercise extends Model
     protected $fillable = [
         'name',
         'price',
-        'plan',
+        'tag',
+        'short_description',
         'image'
     ];
 

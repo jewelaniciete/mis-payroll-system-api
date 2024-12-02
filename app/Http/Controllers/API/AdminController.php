@@ -296,7 +296,7 @@ class AdminController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'price' => 'required',
-            'plan' => 'required'
+            'short_description' => 'required'
         ]);
 
         if ($validator->fails()) {
@@ -306,7 +306,8 @@ class AdminController extends Controller
         $exercise = Exercise::create([
             'name' => $request->name,
             'price' => $request->price,
-            'plan' => $request->plan
+            'tag' => $request->tag,
+            'short_description' => $request->short_description
         ]);
 
         return response()->json([
@@ -341,7 +342,7 @@ class AdminController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'price' => 'required',
-            'plan' => 'required'
+            'short_description' => 'required'
         ]);
 
         if ($validator->fails()) {
@@ -351,7 +352,8 @@ class AdminController extends Controller
         $exercise->update([
             'name' => $request->name,
             'price' => $request->price,
-            'plan' => $request->plan
+            'tag' => $request->tag,
+            'short_description' => $request->short_description
         ]);
 
         return response()->json([
