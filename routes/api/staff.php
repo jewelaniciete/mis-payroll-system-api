@@ -16,6 +16,11 @@ Route::prefix('staff')->middleware(['auth:api-staff','scopes:staff_user'])->grou
     Route::get('/edit-client/{id}', [StaffController::class, 'edit_clients']);
     Route::post('/update-client/{id}', [StaffController::class, 'update_clients']);
 
+    Route::get('/show-client-list', [StaffController::class, 'show_all_clients']);
+    Route::get('/show-staff-list', [StaffController::class, 'show_all_staffs']);
+    Route::get('/show-exercise-list', [StaffController::class, 'show_all_exercises']);
+
+
     Route::post('/cart/checkout', [ProductTransactionController::class, 'checkout']);
     Route::get('/cart/show', [ProductTransactionController::class, 'show']);
     Route::post('/cart/soft-delete/{id}', [ProductTransactionController::class, 'soft_delete_product_transaction']);

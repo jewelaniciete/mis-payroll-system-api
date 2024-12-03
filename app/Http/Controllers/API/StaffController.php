@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Models\Staff;
 use App\Models\Client;
+use App\Models\Exercise;
 use App\Models\Inventory;
 use App\Models\StaffCart;
 use App\Models\StaffOrder;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\ClientShowResource;
 use App\Http\Responses\ValidationResponse;
+use App\Http\Resources\ExerciseShowResource;
 
 class StaffController extends Controller
 {
@@ -104,16 +106,32 @@ class StaffController extends Controller
         ], 200);
     }
 
-    public function soft_delete_clients(Request $request, $id){
-        //
+    public function show_all_clients(){
+        $clients = Client::all();
+
+        return response()->json([
+            'data' => ClientShowResource::collection($clients),
+            'message' => 'Clients retrieved successfully'
+        ], 200);
     }
 
-    public function hard_delete_clients(Request $request, $id){
-        //
+    public function show_all_staffs(){
+        $staffs = Staff::where('position_id', 2)->get();
+
+        return response()->json([
+            'data' => $staffs,
+            'message' => 'Staffs retrieved successfully'
+        ], 200);
     }
 
-    public function restore_clients(Request $request, $id){
-        //
+    public function show_all_exercises(){
+        $exercises = Exercise::all();
+
+        return response()->json([
+            'data' => $exercises,
+            'message' => 'Exercises retrieved successfully'
+        ], 200);
     }
+
 
 }
