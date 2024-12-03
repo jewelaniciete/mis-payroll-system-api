@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('short_description')->nullable();
             $table->integer('quantity');
             $table->decimal('price');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

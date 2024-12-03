@@ -127,6 +127,12 @@ class AdminController extends Controller
     public function trashed_record_clients(){
         $trashed = Client::onlyTrashed()->get();
 
+        if ($trashed->isEmpty()) {
+            return response()->json([
+                'message' => 'No clients found'
+            ], 404);
+        }
+
         return response()->json([
             'data' => ClientShowResource::collection($trashed),
             'message' => 'Clients retrieved successfully'
@@ -134,7 +140,12 @@ class AdminController extends Controller
     }
 
     public function force_delete_clients(Request $request, $id){
-        $delete = Client::withTrashed()->find($id);
+        $delete = Client::onlyTrashed()->find($id);
+
+        if (!$delete) {
+            return response()->json(['message' => 'Client not found'], 404);
+        }
+
         $delete->forceDelete();
 
         return response()->json([
@@ -143,7 +154,11 @@ class AdminController extends Controller
     }
 
     public function restore_clients(Request $request, $id){
-        $restore = Client::withTrashed()->find($id);
+        $restore = Client::onlyTrashed()->find($id);
+
+        if (!$restore) {
+            return response()->json(['message' => 'Client not found'], 404);
+        }
         $restore->restore();
 
         return response()->json([
@@ -269,7 +284,7 @@ class AdminController extends Controller
     }
 
     public function force_delete_staffs(Request $request, $id){
-        $delete = Staff::withTrashed()->find($id);
+        $delete = Staff::onlyTrashed()->find($id);
         $delete->forceDelete();
 
         return response()->json([
@@ -278,7 +293,7 @@ class AdminController extends Controller
     }
 
     public function restore_staffs(Request $request, $id){
-        $restore = Staff::withTrashed()->find($id);
+        $restore = Staff::onlyTrashed()->find($id);
         $restore->restore();
 
         return response()->json([
@@ -534,15 +549,55 @@ class AdminController extends Controller
     }
 
     public function soft_delete_inventories(Request $request, $id){
-        //
+        $inventory = Inventory::find($id);
+
+        if (!$inventory) {
+            return response()->json(['message' => 'Inventory not found'], 404);
+        }
+
+        $inventory->delete();
+
+        return response()->json(['message' => 'Inventory deleted successfully'], 200);
+    }
+
+    public function trashed_record_inventories(){
+        $trashed = Inventory::onlyTrashed()->get();
+
+        if (!$trashed) {
+            return response()->json(['message' => 'Inventory not found'], 404);
+        }
+
+        return response()->json([
+            'data' => InventoryShowResource::collection($trashed),
+            'message' => 'Clients retrieved successfully'
+        ]);
     }
 
     public function hard_delete_inventories(Request $request, $id){
-        //
+        $delete = Inventory::onlyTrashed()->find($id);
+
+        if (!$delete) {
+            return response()->json(['message' => 'Inventory not found'], 404);
+        }
+        $delete->forceDelete();
+
+        return response()->json([
+            'message' => 'Inventory permanently deleted successfully'
+        ], 200);
     }
 
     public function restore_inventories(Request $request, $id){
-        //
+        $restore = Inventory::onlyTrashed()->find($id);
+
+        if (!$restore) {
+            return response()->json(['message' => 'Inventory not found'], 404);
+        }
+
+        $restore->restore();
+
+        return response()->json([
+            'message' => 'Inventory restored successfully'
+        ]);
     }
 
     public function show_staff_attendances(){
