@@ -38,16 +38,16 @@ class ExerciseTransactionController extends Controller
         $instructor = Staff::where('id', $request->instructor_id)->
             where('position_id', '2')->first();
 
-        if (!$instructor) {
-            return response()->json([
-                'message' => 'Instructor not found'
-            ], 404);
-        }
+        // if (!$instructor) {
+        //     return response()->json([
+        //         'message' => 'Instructor not found'
+        //     ], 404);
+        // }
 
         $exercise_transaction = ExerciseTransaction::create([
             'client_id' => $client->id,
             'exercise_id' => $exercise->id,
-            'instructor_id' => $instructor->id,
+            'instructor_id' => $instructor->id ?? null,
             'isMainPlan' => $request->isMainPlan,
             'expire_date' => $request->expire_date,
             'price' => $price,
@@ -78,7 +78,7 @@ class ExerciseTransactionController extends Controller
                     return [
                         'exercise_name' => $transaction->exercise->name,
                         'tag' => $transaction->exercise->tag,
-                        'instructor_name' => $transaction->instructor->firstname . ' ' . $transaction->instructor->lastname,
+                        'instructor_name' => optional($transaction->instructor)->firstname . ' ' . optional($transaction->instructor)->lastname,
                         'price' => $transaction->price,
                         'isMainPlan' => $transaction->isMainPlan,
                         'expire_date' => $transaction->expire_date,
