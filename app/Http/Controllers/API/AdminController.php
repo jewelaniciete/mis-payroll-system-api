@@ -378,15 +378,60 @@ class AdminController extends Controller
     }
 
     public function soft_delete_exercises(Request $request, $id){
-        //
+        $soft = Exercise::find($id);
+
+        if (!$soft) {
+            return response()->json(['message' => 'Exercise not found'], 404);
+        }
+
+        $soft->delete();
+
+        return response()->json(['message' => 'Exercise deleted successfully'], 200);
     }
 
+    public function trashed_record_exercise(){
+        $trashed = Exercise::onlyTrashed()->get();
+
+        if ($trashed->isEmpty()) {
+            return response()->json([
+                'message' => 'No clients found'
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => ExerciseShowResource::collection($trashed),
+            'message' => 'Exercises retrieved successfully'
+        ]);
+    }
+
+
     public function hard_delete_exercises(Request $request, $id){
-        //
+        $delete = Exercise::onlyTrashed()->find($id);
+
+        if (!$delete) {
+            return response()->json(['message' => 'Exercise not found'], 404);
+        }
+
+        $delete->forceDelete();
+
+        return response()->json([
+            'message' => 'Exercise was permanently deleted'
+        ]);
     }
 
     public function restore_exercises(Request $request, $id){
-        //
+        $restore = Exercise::onlyTrashed()->find($id);
+
+        if (!$restore) {
+            return response()->json(['message' => 'Exercise not found'], 404);
+        }
+
+        $restore->restore();
+
+        return response()->json([
+            'message' => 'Exercise restored successfully',
+            'data' => new ExerciseShowResource($restore)
+        ]);
     }
 
     public function show_positions(){
@@ -569,7 +614,7 @@ class AdminController extends Controller
 
         return response()->json([
             'data' => InventoryShowResource::collection($trashed),
-            'message' => 'Clients retrieved successfully'
+            'message' => 'Inventory retrieved successfully'
         ]);
     }
 

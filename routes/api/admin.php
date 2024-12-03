@@ -37,10 +37,10 @@ Route::prefix('admin')->middleware(['auth:api-admin','scopes:admin_user'])->grou
     Route::get('/edit-exercise/{id}', [AdminController::class, 'edit_exercises']);
     Route::post('/update-exercise/{id}', [AdminController::class, 'update_exercises']);
 
-    Route::post('/soft-delete-inventory/{id}', [AdminController::class, 'soft_delete_inventories']);       // soft delete
-    Route::get('/archive-inventory', [AdminController::class, 'trashed_record_inventories']);              // used to display archived records
-    Route::post('/force-delete-inventory/{id}', [AdminController::class, 'hard_delete_inventories']);     // used to permanently delete records in archive
-    Route::post('/restore-inventory/{id}', [AdminController::class, 'restore_inventories']);
+    Route::post('/soft-delete-exercise/{id}', [AdminController::class, 'soft_delete_exercises']);       // soft delete
+    Route::get('/archive-exercise', [AdminController::class, 'trashed_record_exercise']);              // used to display archived records
+    Route::post('/force-delete-exercise/{id}', [AdminController::class, 'hard_delete_exercises']);     // used to permanently delete records in archive
+    Route::post('/restore-exercise/{id}', [AdminController::class, 'restore_exercises']);
 
     // --- position
     Route::get('show-position', [AdminController::class, 'show_positions']);
@@ -53,6 +53,11 @@ Route::prefix('admin')->middleware(['auth:api-admin','scopes:admin_user'])->grou
     Route::post('/store-inventory', [AdminController::class, 'store_inventories']);
     Route::get('/edit-inventory/{id}', [AdminController::class, 'edit_inventories']);
     Route::post('/update-inventory/{id}', [AdminController::class, 'update_inventories']);
+
+    Route::post('/soft-delete-inventory/{id}', [AdminController::class, 'soft_delete_inventories']);       // soft delete
+    Route::get('/archive-inventory', [AdminController::class, 'trashed_record_inventories']);              // used to display archived records
+    Route::post('/force-delete-inventory/{id}', [AdminController::class, 'hard_delete_inventories']);     // used to permanently delete records in archive
+    Route::post('/restore-inventory/{id}', [AdminController::class, 'restore_inventories']);
 
     // --- attendance
     Route::get('show-attendance-list', [AdminController::class, 'show_staff_attendances']);

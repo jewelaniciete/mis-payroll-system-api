@@ -18,6 +18,7 @@ return new class extends Migration
             $table->enum('tag', ['session', 'monthly'])->default('session');
             $table->string('short_description')->nullable();
             $table->string('image')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

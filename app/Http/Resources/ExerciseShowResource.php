@@ -18,8 +18,8 @@ class ExerciseShowResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'price' => $this->price,
-            'plan' => $this->plan,
-            'image' => $this->image
+            'tag' => $this->tag,
+            'short_description' => $this->short_description
         ];
     }
 }
