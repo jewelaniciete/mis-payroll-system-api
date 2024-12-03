@@ -48,6 +48,11 @@ Route::prefix('admin')->middleware(['auth:api-admin','scopes:admin_user'])->grou
     Route::get('/edit-position/{id}', [AdminController::class, 'edit_positions']);
     Route::post('/update-position/{id}', [AdminController::class, 'update_positions']);
 
+    Route::post('/soft-delete-position/{id}', [AdminController::class, 'soft_delete_positions']);       // soft delete
+    Route::get('/archive-position', [AdminController::class, 'trashed_record_positions']);              // used to display archived records
+    Route::post('/force-delete-position/{id}', [AdminController::class, 'hard_delete_positions']);     // used to permanently delete records in archive
+    Route::post('/restore-position/{id}', [AdminController::class, 'restore_positions']);
+
     // --- inventory
     Route::get('show-inventory', [AdminController::class, 'show_inventories']);
     Route::post('/store-inventory', [AdminController::class, 'store_inventories']);

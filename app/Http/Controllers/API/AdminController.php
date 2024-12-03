@@ -500,15 +500,59 @@ class AdminController extends Controller
     }
 
     public function soft_delete_positions(Request $request, $id){
-        //
+        $soft = Position::find($id);
+
+        if (!$soft) {
+            return response()->json(['message' => 'Position not found'], 404);
+        }
+
+        $soft->delete();
+
+        return response()->json(['message' => 'Position deleted successfully'], 200);
+    }
+
+    public function trashed_record_positions(){
+        $trashed = Position::onlyTrashed()->get();
+
+        if ($trashed->isEmpty()) {
+            return response()->json([
+                'message' => 'No clients found'
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => PositionShowResource::collection($trashed),
+            'message' => 'Postions retrieved successfully'
+        ]);
     }
 
     public function hard_delete_positions(Request $request, $id){
-        //
+        $delete = Position::onlyTrashed()->find($id);
+
+        if (!$delete) {
+            return response()->json(['message' => 'Position not found'], 404);
+        }
+
+        $delete->forceDelete();
+
+        return response()->json([
+            'message' => 'Position was permanently deleted'
+        ]);
     }
 
+
     public function restore_positions(Request $request, $id){
-        //
+        $restore = Position::onlyTrashed()->find($id);
+
+        if (!$restore) {
+            return response()->json(['message' => 'Position not found'], 404);
+        }
+
+        $restore->restore();
+
+        return response()->json([
+            'message' => 'Position restored successfully',
+        ]);
     }
 
     public function show_inventories(){
