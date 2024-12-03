@@ -11,21 +11,29 @@ Route::prefix('staff')->middleware(['auth:api-staff','scopes:staff_user'])->grou
     Route::get('/auth',[AuthController::class, 'auth']);
     Route::post('/logout',[AuthController::class, 'logout']);
 
+    // --- client
     Route::get('/show-client', [StaffController::class, 'show_clients']);
     Route::post('/store-client', [StaffController::class, 'store_clients']);
     Route::get('/edit-client/{id}', [StaffController::class, 'edit_clients']);
     Route::post('/update-client/{id}', [StaffController::class, 'update_clients']);
 
+    // --- dropdown
     Route::get('/show-client-list', [StaffController::class, 'show_all_clients']);
     Route::get('/show-staff-list', [StaffController::class, 'show_all_staffs']);
     Route::get('/show-exercise-list', [StaffController::class, 'show_all_exercises']);
 
-
+    // --- product
     Route::post('/cart/checkout', [ProductTransactionController::class, 'checkout']);
     Route::get('/cart/show', [ProductTransactionController::class, 'show']);
 
-
+    // --- exercise
     Route::post('/exercise-transaction/add', [ExerciseTransactionController::class, 'store']);
     Route::get('/exercise-transaction/show', [ExerciseTransactionController::class, 'show']);
+
+    // --- inventory
+    Route::get('/inventory-lists', [StaffController::class, 'show_inventories']);
+
+    // --- attendance
+    Route::get('/attendance-lists', [StaffController::class, 'show_staff_attendances']);
 
 });

@@ -10,6 +10,7 @@ use App\Models\StaffCart;
 use App\Models\StaffOrder;
 use Illuminate\Http\Request;
 use App\Models\StaffOrderItem;
+use App\Models\EmployeeAttendance;
 use App\Models\SecurityQuesAndAns;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\ClientShowResource;
 use App\Http\Responses\ValidationResponse;
 use App\Http\Resources\ExerciseShowResource;
+use App\Http\Resources\InventoryShowResource;
+use App\Http\Resources\EmployeeAttendanceResource;
 
 class StaffController extends Controller
 {
@@ -133,5 +136,16 @@ class StaffController extends Controller
         ], 200);
     }
 
+    public function show_inventories(){
+        $inventories = Inventory::all();
+
+        return InventoryShowResource::collection($inventories);
+    }
+
+    public function show_staff_attendances(){
+        $attendances = EmployeeAttendance::with('staff')->get();
+
+        return EmployeeAttendanceResource::collection($attendances);
+    }
 
 }
