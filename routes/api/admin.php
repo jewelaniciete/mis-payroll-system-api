@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\AdminController;
+use App\Http\Controllers\ProductTransactionController;
+use App\Http\Controllers\API\ExerciseTransactionController;
 
 Route::prefix('admin')->middleware(['auth:api-admin','scopes:admin_user'])->group(function(){
     Route::get('/auth',[AuthController::class, 'auth']);
@@ -83,6 +85,20 @@ Route::prefix('admin')->middleware(['auth:api-admin','scopes:admin_user'])->grou
     Route::get('/archive-payroll', [AdminController::class, 'trashed_record_payrolls']);              // used to display archived records
     Route::post('/force-delete-payroll/{id}', [AdminController::class, 'hard_delete_staff_payrolls']);     // used to permanently delete records in archive
     Route::post('/restore-payroll/{id}', [AdminController::class, 'restore_staff_payrolls']);
+
+    // --- pos exercise
+    Route::get('/exercise-transaction/show', [ExerciseTransactionController::class, 'show']); // show archive
+    Route::get('/exercise-transaction/archive', [ExerciseTransactionController::class, 'trashed_record_exercise_transaction']);
+    Route::post('/exercise-transaction/delete/{transaction_code}', [ExerciseTransactionController::class, 'soft_delete_exercise_transaction']); // soft delete
+    Route::post('/exercise-transaction/restore/{transaction_code}', [ExerciseTransactionController::class, 'restore_record_exercise_transaction']); // restore archive
+    Route::post('/exercise-transaction/delete-permanent/{transaction_code}', [ExerciseTransactionController::class, 'force_delete_record_exercise_transaction']); // permanent delete
+
+    // --- pos product
+    Route::get('/cart/show', [ProductTransactionController::class, 'show']);
+    Route::post('/cart/soft-delete/{id}', [ProductTransactionController::class, 'soft_delete_product_transaction']);
+    Route::post('/cart/restore/{id}', [ProductTransactionController::class, 'restore_product_transaction']);
+    Route::post('/cart/delete-permanent/{id}', [ProductTransactionController::class, 'force_delete_product_transaction']);
+    Route::get('/cart/archive', [ProductTransactionController::class, 'trashed_record_exercise_transaction']);
 
     // --- backups
     Route::get('/database/backup', [AdminController::class, 'backup']);
