@@ -786,15 +786,62 @@ class AdminController extends Controller
     }
 
     public function soft_delete_staff_attendances(Request $request, $id){
-        //
+        $soft = EmployeeAttendance::find($id);
+
+        if(!$soft){
+            return response()->json([
+                'message' => 'Attendance not found'
+            ], 404);
+        }
+
+        $soft->delete();
+
+        return response()->json([
+            'message' => 'Attendance deleted successfully'
+        ]);
+    }
+
+    public function trashed_record_attendancess(){
+        $trashed = EmployeeAttendance::onlyTrashed()->get();
+
+        if ($trashed->isEmpty()) {
+            return response()->json([
+                'message' => 'No clients found'
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => EmployeeAttendanceResource::collection($trashed),
+            'message' => 'Attendances retrieved successfully'
+        ]);
     }
 
     public function hard_delete_staff_attendances(Request $request, $id){
-        //
+        $delete = EmployeeAttendance::onlyTrashed()->find($id);
+
+        if (!$delete) {
+            return response()->json(['message' => 'Attendance not found'], 404);
+        }
+
+        $delete->forceDelete();
+
+        return response()->json([
+            'message' => 'Attendance permanently deleted successfully'
+        ]);
     }
 
     public function restore_staff_attendances(Request $request, $id){
-        //
+        $restore = EmployeeAttendance::onlyTrashed()->find($id);
+
+        if (!$restore) {
+            return response()->json(['message' => 'Attendance not found'], 404);
+        }
+
+        $restore->restore();
+
+        return response()->json([
+            'message' => 'Attendance restored successfully'
+        ]);
     }
 
     public function show_staff_payrolls(){

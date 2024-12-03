@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreign('staff_id')->references('id')->on('staff')->onDelete('cascade');
             $table->enum('attendance', ['present', 'absent', 'halfday'])->default('absent');
             $table->date('date');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

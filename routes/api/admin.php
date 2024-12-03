@@ -70,6 +70,11 @@ Route::prefix('admin')->middleware(['auth:api-admin','scopes:admin_user'])->grou
     Route::get('/edit-attendance/{id}', [AdminController::class, 'edit_staff_attendances']);
     Route::post('/update-attendance/{id}', [AdminController::class, 'update_staff_attendances']);
 
+    Route::post('/soft-delete-attendance/{id}', [AdminController::class, 'soft_delete_staff_attendances']);       // soft delete
+    Route::get('/archive-attendance', [AdminController::class, 'trashed_record_attendancess']);              // used to display archived records
+    Route::post('/force-delete-attendance/{id}', [AdminController::class, 'hard_delete_staff_attendances']);     // used to permanently delete records in archive
+    Route::post('/restore-attendance/{id}', [AdminController::class, 'restore_staff_attendances']);
+
     // --- payroll
     Route::get('/show-staff-payroll', [AdminController::class, 'show_staff_payrolls']);
     Route::post('/store-staff-payroll/{id}', [AdminController::class, 'store_staff_payrolls']);
