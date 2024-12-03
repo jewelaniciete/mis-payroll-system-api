@@ -394,7 +394,7 @@ class AdminController extends Controller
 
         if ($trashed->isEmpty()) {
             return response()->json([
-                'message' => 'No clients found'
+                'message' => 'No Exercise found'
             ], 404);
         }
 
@@ -516,7 +516,7 @@ class AdminController extends Controller
 
         if ($trashed->isEmpty()) {
             return response()->json([
-                'message' => 'No clients found'
+                'message' => 'No Position found'
             ], 404);
         }
 
@@ -806,7 +806,7 @@ class AdminController extends Controller
 
         if ($trashed->isEmpty()) {
             return response()->json([
-                'message' => 'No clients found'
+                'message' => 'No Attendance found'
             ], 404);
         }
 
@@ -939,6 +939,65 @@ class AdminController extends Controller
         return response()->json([
             'data' => new EmployeePayrollResource($payroll),
             'message' => 'Payroll retrieved successfully'
+        ]);
+    }
+
+    public function soft_delete_staff_payrolls(Request $request, $id){
+        $soft = EmployeePayroll::find($id);
+
+        if(!$soft){
+            return response()->json([
+                'message' => 'Payroll not found'
+            ], 404);
+        }
+
+        $soft->delete();
+
+        return response()->json([
+            'message' => 'Payroll deleted successfully'
+        ]);
+    }
+
+    public function trashed_record_payrolls(){
+        $trashed = EmployeePayroll::onlyTrashed()->get();
+
+        if ($trashed->isEmpty()) {
+            return response()->json([
+                'message' => 'No Payrolls found'
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => EmployeePayrollResource::collection($trashed),
+            'message' => 'Payrolls retrieved successfully'
+        ]);
+    }
+
+    public function hard_delete_staff_payrolls(Request $request, $id){
+        $delete = EmployeePayroll::onlyTrashed()->find($id);
+
+        if (!$delete) {
+            return response()->json(['message' => 'Payrolls not found'], 404);
+        }
+
+        $delete->forceDelete();
+
+        return response()->json([
+            'message' => 'Payrolls permanently deleted successfully'
+        ]);
+    }
+
+    public function restore_staff_payrolls(Request $request, $id){
+        $restore = EmployeePayroll::onlyTrashed()->find($id);
+
+        if (!$restore) {
+            return response()->json(['message' => 'Payroll not found'], 404);
+        }
+
+        $restore->restore();
+
+        return response()->json([
+            'message' => 'Payroll restored successfully'
         ]);
     }
 

@@ -79,6 +79,11 @@ Route::prefix('admin')->middleware(['auth:api-admin','scopes:admin_user'])->grou
     Route::get('/show-staff-payroll', [AdminController::class, 'show_staff_payrolls']);
     Route::post('/store-staff-payroll/{id}', [AdminController::class, 'store_staff_payrolls']);
 
+    Route::post('/soft-delete-payroll/{id}', [AdminController::class, 'soft_delete_staff_payrolls']);       // soft delete
+    Route::get('/archive-payroll', [AdminController::class, 'trashed_record_payrolls']);              // used to display archived records
+    Route::post('/force-delete-payroll/{id}', [AdminController::class, 'hard_delete_staff_payrolls']);     // used to permanently delete records in archive
+    Route::post('/restore-payroll/{id}', [AdminController::class, 'restore_staff_payrolls']);
+
     // --- backups
     Route::get('/database/backup', [AdminController::class, 'backup']);
 });
