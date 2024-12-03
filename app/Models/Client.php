@@ -31,4 +31,9 @@ class Client extends Authenticatable
         return $this->hasMany(ExerciseTransaction::class);
     }
 
+    public function order()
+    {
+        return $this->hasMany(StaffOrder::class);
+    }
+
 }

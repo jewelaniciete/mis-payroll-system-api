@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Staff;
+use App\Models\Client;
 use App\Models\Inventory;
 use App\Models\ExerciseTransaction;
 use Illuminate\Database\Eloquent\Model;
@@ -11,12 +11,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class StaffCart extends Model
 {
     use HasFactory;
-    protected $fillable = ['staff_id', 'inventory_id', 'quantity', 'price'];
+    protected $fillable = ['client_id', 'inventory_id', 'quantity', 'price'];
 
 
-    public function staff()
+    public function client()
     {
-        return $this->belongsTo(Staff::class);
+        return $this->belongsTo(Client::class);
     }
 
     public function product()

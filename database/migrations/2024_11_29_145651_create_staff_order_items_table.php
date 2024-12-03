@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreign('inventory_id')->references('id')->on('inventories')->onDelete('cascade');
             $table->integer('quantity');
             $table->decimal('price', 8, 2);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('staff_carts', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('staff_id');
-            $table->foreign('staff_id')->references('id')->on('staff')->onDelete('cascade');
+            $table->unsignedBigInteger('client_id');
+            $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->unsignedBigInteger('inventory_id');
             $table->foreign('inventory_id')->references('id')->on('inventories')->onDelete('cascade');
             $table->integer('quantity');

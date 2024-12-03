@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('staff_orders', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('staff_id');
-            $table->foreign('staff_id')->references('id')->on('staff')->onDelete('cascade');
+            $table->unsignedBigInteger('client_id');
+            $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->decimal('total_amount', 10, 2);
             $table->enum('status', ['pending', 'paid', 'cancelled'])->default('pending');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

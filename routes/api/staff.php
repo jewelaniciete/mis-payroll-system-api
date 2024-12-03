@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\StaffController;
+use App\Http\Controllers\ProductTransactionController;
 use App\Http\Controllers\API\ExerciseTransactionController;
 
 Route::prefix('staff')->middleware(['auth:api-staff','scopes:staff_user'])->group(function(){
@@ -15,9 +16,12 @@ Route::prefix('staff')->middleware(['auth:api-staff','scopes:staff_user'])->grou
     Route::get('/edit-client/{id}', [StaffController::class, 'edit_clients']);
     Route::post('/update-client/{id}', [StaffController::class, 'update_clients']);
 
-    Route::post('/cart/add', [StaffController::class, 'add_to_cart']);
-    Route::post('/cart/remove', [StaffController::class, 'remove_item']);
-    Route::post('/cart/checkout', [StaffController::class, 'checkout']);
+    Route::post('/cart/checkout', [ProductTransactionController::class, 'checkout']);
+    Route::get('/cart/show', [ProductTransactionController::class, 'show']);
+    Route::post('/cart/soft-delete/{id}', [ProductTransactionController::class, 'soft_delete_product_transaction']);
+    Route::post('/cart/restore/{id}', [ProductTransactionController::class, 'restore_product_transaction']);
+    Route::post('/cart/delete-permanent/{id}', [ProductTransactionController::class, 'force_delete_product_transaction']);
+    Route::get('/cart/archive', [ProductTransactionController::class, 'trashed_record_exercise_transaction']);
 
     Route::post('/exercise-transaction/add', [ExerciseTransactionController::class, 'store']);
     Route::get('/exercise-transaction/show', [ExerciseTransactionController::class, 'show']);

@@ -5,18 +5,42 @@ namespace App\Models;
 use App\Models\Staff;
 use App\Models\StaffOrderItem;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class StaffOrder extends Model
 {
-    protected $fillable = ['staff_id', 'total_amount', 'status'];
+
+    use HasFactory;
+    use SoftDeletes;
+
+    protected $fillable = ['client_id', 'total_amount', 'status'];
 
     public function items()
     {
-        return $this->hasMany(StaffOrderItem::class);
+        return $this->hasMany(StaffOrderItem::class, 'order_id')->withTrashed();
     }
 
-    public function staff()
+    public function client()
     {
-        return $this->belongsTo(Staff::class);
+        return $this->belongsTo(Client::class);
     }
+
+    protected static function booted()
+    {
+        static::deleting(function ($order) {
+            $order->items()->delete(); // Soft delete related items
+        });
+
+        static::restoring(function ($order) {
+            $order->items()->restore(); // Restore related items
+        });
+
+        static::deleting(function ($order) {
+            if ($order->isForceDeleting()) {
+                $order->items()->forceDelete(); // Permanently delete related items
+            }
+        });
+    }
+
 }
