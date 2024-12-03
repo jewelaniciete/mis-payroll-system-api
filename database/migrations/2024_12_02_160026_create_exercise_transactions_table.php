@@ -20,6 +20,7 @@ return new class extends Migration
             $table->date('expire_date');
             $table->decimal('price', 8, 2);
             $table->string('transaction_code');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

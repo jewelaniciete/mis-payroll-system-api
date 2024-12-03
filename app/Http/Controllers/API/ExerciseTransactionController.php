@@ -61,34 +61,129 @@ class ExerciseTransactionController extends Controller
     }
 
     public function show(){
-        $records = Client::with(['exerciseTransactions.exercise', 'exerciseTransactions.instructor'])->get();
+        $records = ExerciseTransaction::with(['exercise', 'instructor', 'client'])->get();
 
-        $modifiedRecords = $records->map(function ($client) {
+        // Group transactions by transaction code
+        $groupedRecords = $records->groupBy('transaction_code')->map(function ($transactions, $transactionCode) {
+            $firstTransaction = $transactions->first();
+
             return [
-                'client_name' => $client->firstname . ' ' . $client->lastname,
-                'email' => $client->email,
-                'gender' => $client->gender,
-                'address' => $client->address,
-                'contact_no' => $client->contact_no,
-                'transactions' => $client->exerciseTransactions->map(function ($transaction) {
+                'transaction_code' => $transactionCode,
+                'client_name' => $firstTransaction->client->firstname . ' ' . $firstTransaction->client->lastname,
+                'email' => $firstTransaction->client->email,
+                'gender' => $firstTransaction->client->gender,
+                'address' => $firstTransaction->client->address,
+                'contact_no' => $firstTransaction->client->contact_no,
+                'transactions' => $transactions->map(function ($transaction) {
                     return [
                         'exercise_name' => $transaction->exercise->name,
                         'tag' => $transaction->exercise->tag,
                         'instructor_name' => $transaction->instructor->firstname . ' ' . $transaction->instructor->lastname,
                         'price' => $transaction->price,
-                        'transaction_code' => $transaction->transaction_code,
                         'isMainPlan' => $transaction->isMainPlan,
-                        'expire_date' => $transaction->expire_date
+                        'expire_date' => $transaction->expire_date,
                     ];
                 }),
-                'total_price' => $client->exerciseTransactions->sum('price'),
+                'total_price' => $transactions->sum('price'),
             ];
         });
 
         return response()->json([
-            'data' => $modifiedRecords,
+            'data' => $groupedRecords->values(),
             'message' => 'Records retrieved successfully'
         ]);
     }
+
+    public function soft_delete_exercise_transaction(Request $request, $transaction_code){
+        $transactions = ExerciseTransaction::where('transaction_code', $transaction_code)->get();
+
+        if ($transactions->isEmpty()) {
+            return response()->json([
+                'message' => 'Transaction not found'
+            ], 404);
+        }
+
+        foreach ($transactions as $transaction) {
+            $transaction->delete(); // Soft delete each record
+        }
+
+        return response()->json([
+            'message' => 'Transactions deleted (soft deleted) successfully'
+        ]);
+    }
+
+    public function trashed_record_exercise_transaction(){
+        $transactions = ExerciseTransaction::onlyTrashed()->with(['exercise', 'instructor', 'client'])->get();
+
+        // Group trashed transactions by transaction code
+        $groupedRecords = $transactions->groupBy('transaction_code')->map(function ($transactions, $transactionCode) {
+            $firstTransaction = $transactions->first();
+
+            return [
+                'transaction_code' => $transactionCode,
+                'client_name' => $firstTransaction->client->firstname . ' ' . $firstTransaction->client->lastname,
+                'email' => $firstTransaction->client->email,
+                'gender' => $firstTransaction->client->gender,
+                'address' => $firstTransaction->client->address,
+                'contact_no' => $firstTransaction->client->contact_no,
+                'transactions' => $transactions->map(function ($transaction) {
+                    return [
+                        'exercise_name' => $transaction->exercise->name,
+                        'tag' => $transaction->exercise->tag,
+                        'instructor_name' => $transaction->instructor->firstname . ' ' . $transaction->instructor->lastname,
+                        'price' => $transaction->price,
+                        'isMainPlan' => $transaction->isMainPlan,
+                        'expire_date' => $transaction->expire_date,
+                    ];
+                }),
+                'total_price' => $transactions->sum('price'),
+            ];
+        });
+
+        return response()->json([
+            'data' => $groupedRecords->values(), // Convert to an indexed array
+            'message' => 'Trashed records retrieved successfully'
+        ]);
+    }
+
+    public function restore_record_exercise_transaction(Request $request, $transaction_code){
+        $transactions = ExerciseTransaction::onlyTrashed()->where('transaction_code', $transaction_code)->get();
+
+        if ($transactions->isEmpty()) {
+            return response()->json([
+                'message' => 'Transaction not found'
+            ], 404);
+        }
+
+        foreach ($transactions as $transaction) {
+            $transaction->restore();
+        }
+
+        return response()->json([
+            'message' => 'Transactions restored successfully'
+        ]);
+    }
+
+    public function force_delete_record_exercise_transaction(Request $request, $transaction_code){
+        $transactions = ExerciseTransaction::onlyTrashed()->where('transaction_code', $transaction_code)->get();
+
+        if ($transactions->isEmpty()) {
+            return response()->json([
+                'message' => 'Transaction not found'
+            ], 404);
+        }
+
+        foreach ($transactions as $transaction) {
+            $transaction->forceDelete();
+        }
+
+        return response()->json([
+            'message' => 'Transactions permanently deleted successfully'
+        ]);
+    }
+
+
+
+
 
 }

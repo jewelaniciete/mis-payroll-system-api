@@ -6,11 +6,13 @@ use App\Models\Staff;
 use App\Models\Client;
 use App\Models\Exercise;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ExerciseTransaction extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'client_id',
