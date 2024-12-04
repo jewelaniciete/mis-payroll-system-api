@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Client;
 use App\Models\Exercise;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,69 +13,49 @@ class AdminDashboardController extends Controller
 {
 
     public function index(){
-        // $totalSales = ExerciseTransaction::with('exercise', 'client')->get();
+        $totalSales = Client::with('exerciseTransactions.exercise')->get();
+        $salesByExercise = $totalSales->flatMap(function ($client) {
+            return $client->exerciseTransactions->map(function ($transaction) {
+                return $transaction->exercise;
+            });
+        })->groupBy('id')->map(function ($exercises) {
+            return [
+                'id' => $exercises->first()->id,
+                'name' => $exercises->first()->name,
+                'sales' => $exercises->sum(function ($exercise) {
+                    return $exercise->price;
+                }),
+            ];
+        });
 
-        // return response()->json([
-        //     $totalSales
-        // ]);
-        // $totalSales = ExerciseTransaction::with('exercise')
-        // ->select('exercise_id', DB::raw('sum(price) as total_sales'))
-        // ->groupBy('exercise_id')
-        // ->get();
-
-        // $formattedSales = $totalSales->map(function($transaction) {
-        //     return [
-        //         'id' => $transaction->exercise_id,
-        //         'name' => $transaction->exercise->name,  // Assuming the Exercise model has a 'name' field
-        //         'total_sales' => $transaction->total_sales
-        //     ];
-        // });
-
-        // return response()->json($formattedSales);
-
-        $totalSales = ExerciseTransaction::with(['exercise', 'client'])
-    ->select('exercise_id', 'client_id', DB::raw('sum(price) as total_sales'))
-    ->groupBy('exercise_id', 'client_id')
-    ->get();
-
-$formattedSales = [];
-$totalGender = [
-    'male' => 0,
-    'female' => 0
-];
-
-foreach ($totalSales as $transaction) {
-    // Ensure exercise exists
-    $exerciseName = $transaction->exercise ? $transaction->exercise->name : 'Unknown Exercise';
-    $gender = $transaction->client ? $transaction->client->gender : 'unknown';
-    $totalSalesAmount = $transaction->total_sales; // Total sales for this transaction
-
-    // Initialize result array for each exercise if not already initialized
-    if (!isset($formattedSales[$exerciseName])) {
-        $formattedSales[$exerciseName] = [
-            'id' => $transaction->exercise_id,
-            'name' => $exerciseName,
-            'male_sales' => 0,
-            'female_sales' => 0
+        $totalGender = [
+            'male' => $totalSales->where('gender', 'male')->count(),
+            'female' => $totalSales->where('gender', 'female')->count(),
         ];
-    }
 
-    // Update male or female sales based on the client gender
-    if ($gender == 'male') {
-        $formattedSales[$exerciseName]['male_sales'] += $totalSalesAmount;
-        $totalGender['male']++;
-    } elseif ($gender == 'female') {
-        $formattedSales[$exerciseName]['female_sales'] += $totalSalesAmount;
-        $totalGender['female']++;
-    }
-}
+        $totalSalesCount = $salesByExercise->sum('sales');
 
-// Prepare the final response format
-$response = [
-    'Sales_exercise' => array_values($formattedSales),  // Group exercises and their sales
-    'total_gender' => [$totalGender]  // Include the total male and female count
-];
+        $sessionCount = $totalSales->map(function ($client) {
+            return $client->exerciseTransactions->pluck('exercise.tag')->contains('session') ? 1 : 0;
+        })->sum();
 
-return response()->json($response);
+        $monthlyCount = $totalSales->map(function ($client) {
+            return $client->exerciseTransactions->pluck('exercise.tag')->contains('monthly') ? 1 : 0;
+        })->sum();
+
+        $response = [
+            'Sales_exercise' => $salesByExercise->values(),
+            'total_gender' => [
+                [
+                    'male' => $totalGender['male'],
+                    'female' => $totalGender['female'],
+                ]
+            ],
+            'total_sales' => $totalSalesCount,
+            'monthly_customer' => $monthlyCount,
+            'session_customer' => $sessionCount,
+        ];
+
+        return response()->json($response);
     }
 }
