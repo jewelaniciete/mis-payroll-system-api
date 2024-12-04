@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\StaffController;
+use App\Http\Controllers\API\StaffDashboardController;
 use App\Http\Controllers\ProductTransactionController;
 use App\Http\Controllers\API\ExerciseTransactionController;
 
@@ -35,5 +36,8 @@ Route::prefix('staff')->middleware(['auth:api-staff','scopes:staff_user'])->grou
 
     // --- attendance
     Route::get('/attendance-lists', [StaffController::class, 'show_staff_attendances']);
+
+    // --- dashboard
+    Route::get('/dashboard', [StaffDashboardController::class, 'index']);
 
 });
