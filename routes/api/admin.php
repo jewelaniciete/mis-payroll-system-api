@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\AdminController;
+use App\Http\Controllers\API\AdminDashboardController;
 use App\Http\Controllers\ProductTransactionController;
 use App\Http\Controllers\API\ExerciseTransactionController;
 
@@ -102,4 +103,7 @@ Route::prefix('admin')->middleware(['auth:api-admin','scopes:admin_user'])->grou
 
     // --- backups
     Route::get('/database/backup', [AdminController::class, 'backup']);
+
+    // --- dashboard
+    Route::get('/dashboard', [AdminDashboardController::class, 'index']);
 });

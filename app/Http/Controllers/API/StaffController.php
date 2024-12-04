@@ -35,7 +35,7 @@ class StaffController extends Controller
             'email' => 'required|email',
             'address' => 'required',
             'gender' => 'required',
-            'contact_no' => 'required'
+            'contact_no' => 'required|numeric'
         ]);
 
         if ($validator->fails()) {
@@ -86,7 +86,7 @@ class StaffController extends Controller
             'email' => 'required|email',
             'address' => 'required',
             'gender' => 'required',
-            'contact_no' => 'required'
+            'contact_no' => 'required|numeric'
         ]);
 
         if ($validator->fails()) {

@@ -39,7 +39,7 @@ class AdminController extends Controller
             'email' => 'required|email',
             'address' => 'required',
             'gender' => 'required',
-            'contact_no' => 'required'
+            'contact_no' => 'required|numeric'
         ]);
 
         if ($validator->fails()) {
@@ -90,7 +90,7 @@ class AdminController extends Controller
             'email' => 'required|email',
             'address' => 'required',
             'gender' => 'required',
-            'contact_no' => 'required'
+            'contact_no' => 'required|numeric'
         ]);
 
         if ($validator->fails()) {
@@ -181,7 +181,7 @@ class AdminController extends Controller
             'password' => 'required',
             'address' => 'required',
             'gender' => 'required',
-            'contact_no' => 'required'
+            'contact_no' => 'required|numeric'
         ]);
 
         if ($validator->fails()) {

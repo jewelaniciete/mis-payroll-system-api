@@ -28,6 +28,6 @@ class Exercise extends Model
 
     public function exerciseTransactions()
     {
-        return $this->hasMany(ExerciseTransaction::class);
+        return $this->hasMany(ExerciseTransaction::class, 'exercise_id', 'id');
     }
 }
