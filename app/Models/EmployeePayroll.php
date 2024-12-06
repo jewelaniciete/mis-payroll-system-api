@@ -18,7 +18,7 @@ class EmployeePayroll extends Model
         'total_salary',
         'whole_day_salary',
         'half_day_salart',
-        'overtime',
+        'over_time',
         'yearly_bonus',
         'sales_comission',
         'incentives',
